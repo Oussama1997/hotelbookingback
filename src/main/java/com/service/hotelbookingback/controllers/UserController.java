@@ -1,12 +1,15 @@
 package com.service.hotelbookingback.controllers;
 
 import com.service.hotelbookingback.dtos.ApiResponse;
+import com.service.hotelbookingback.dtos.BookingDTO;
 import com.service.hotelbookingback.dtos.UserDTO;
 import com.service.hotelbookingback.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 @RestController
@@ -18,7 +21,7 @@ public class UserController {
 
     @GetMapping("/all")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<ApiResponse> getAllUsers(){
+    public ResponseEntity<ApiResponse<List<UserDTO>>> getAllUsers(){
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
@@ -34,13 +37,13 @@ public class UserController {
     }
 
     @GetMapping("/account")
-    public ResponseEntity<ApiResponse> getOwnAccountDetails(){
+    public ResponseEntity<ApiResponse<UserDTO>> getOwnAccountDetails(){
         return ResponseEntity.ok(userService.getOwnAccountDetails());
     }
 
 
     @GetMapping("/bookings")
-    public ResponseEntity<ApiResponse> getMyBookingHistory(){
+    public ResponseEntity<ApiResponse<List<BookingDTO>>> getMyBookingHistory(){
         return ResponseEntity.ok(userService.getMyBookingHistory());
     }
 }

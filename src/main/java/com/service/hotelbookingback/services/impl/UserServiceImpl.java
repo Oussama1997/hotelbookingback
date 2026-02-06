@@ -142,11 +142,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ApiResponse getMyBookingHistory() {
+    public ApiResponse<List<BookingDTO>> getMyBookingHistory() {
         User user = getCurrentLoggedInUser();
         List<Booking> bookingList = bookingRepository.findByUserId(user.getId());
         List<BookingDTO> bookingDTOList = modelMapper.map(bookingList, new TypeToken<List<BookingDTO>>(){}.getType());
-        return ApiResponse.builder()
+        return ApiResponse.<List<BookingDTO>>builder()
                 .status(200)
                 .message("Success")
                 .data(bookingDTOList)

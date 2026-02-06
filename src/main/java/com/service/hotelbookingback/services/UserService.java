@@ -24,5 +24,5 @@ public interface UserService {
 
     ApiResponse deleteOwnAccount();
 
-    ApiResponse<BookingDTO> getMyBookingHistory();
+    ApiResponse<List<BookingDTO>> getMyBookingHistory();
 }
