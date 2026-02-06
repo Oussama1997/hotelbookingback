@@ -2,7 +2,7 @@ package com.service.hotelbookingback.services.impl;
 
 import com.service.hotelbookingback.dtos.BookingDTO;
 import com.service.hotelbookingback.dtos.NotificationDTO;
-import com.service.hotelbookingback.dtos.Response;
+import com.service.hotelbookingback.dtos.ApiResponse;
 import com.service.hotelbookingback.entities.Booking;
 import com.service.hotelbookingback.entities.Room;
 import com.service.hotelbookingback.entities.User;
@@ -44,22 +44,22 @@ public class BookingServiceImpl implements BookingService {
 
 
     @Override
-    public Response getAllBookings() {
+    public ApiResponse getAllBookings() {
         List<Booking> bookingList =bookingRepository.findAll(Sort.by(Sort.Direction.DESC, "id"));
         List<BookingDTO> bookingDTOList = modelMapper.map(bookingList, new TypeToken<List<BookingDTO>>() {}.getType());
         for(BookingDTO bookingDTO: bookingDTOList){
             bookingDTO.setUser(null);
             bookingDTO.setRoom(null);
         }
-        return Response.builder()
+        return ApiResponse.builder()
                 .status(200)
                 .message("success")
-                .bookings(bookingDTOList)
+                .data(bookingDTOList)
                 .build();
     }
 
     @Override
-    public Response createBooking(BookingDTO bookingDTO) {
+    public ApiResponse createBooking(BookingDTO bookingDTO) {
         User currentUser = userService.getCurrentLoggedInUser();
         Room room = roomRepository.findById(bookingDTO.getRoomId())
                 .orElseThrow(()-> new NotFoundException("Room Not Found"));
@@ -81,10 +81,10 @@ public class BookingServiceImpl implements BookingService {
             throw new InvalidBookingStateAndDateException("Room is not available for the selected date ranges");
         }
         BookingDTO savedBooking = saveBooking(bookingDTO, room, currentUser);
-        return Response.builder()
+        return ApiResponse.builder()
                 .status(200)
                 .message("Booking is successfully")
-                .booking(savedBooking)
+                .data(savedBooking)
                 .build();
 
     }
@@ -125,19 +125,19 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Response findBookingByReferenceNo(String bookingReference) {
+    public ApiResponse findBookingByReferenceNo(String bookingReference) {
         Booking booking = bookingRepository.findByBookingReference(bookingReference)
                 .orElseThrow(()-> new NotFoundException("Booking with Reference No: " + bookingReference + " Not found"));
         BookingDTO bookingDTO = modelMapper.map(booking, BookingDTO.class);
-        return  Response.builder()
+        return  ApiResponse.builder()
                 .status(200)
                 .message("success")
-                .booking(bookingDTO)
+                .data(bookingDTO)
                 .build();
     }
 
     @Override
-    public Response updateBooking(BookingDTO bookingDTO) {
+    public ApiResponse updateBooking(BookingDTO bookingDTO) {
         if (bookingDTO.getId() == null) throw new NotFoundException("Booking id is required");
         Booking existingBooking = bookingRepository.findById(bookingDTO.getId())
                 .orElseThrow(()-> new NotFoundException("Booking Not Found"));
@@ -149,7 +149,7 @@ public class BookingServiceImpl implements BookingService {
             existingBooking.setPaymentStatus(bookingDTO.getPaymentStatus());
         }
         bookingRepository.save(existingBooking);
-        return Response.builder()
+        return ApiResponse.builder()
                 .status(200)
                 .message("Booking Updated Successfully")
                 .build();

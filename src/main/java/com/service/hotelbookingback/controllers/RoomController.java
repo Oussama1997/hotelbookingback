@@ -1,6 +1,6 @@
 package com.service.hotelbookingback.controllers;
 
-import com.service.hotelbookingback.dtos.Response;
+import com.service.hotelbookingback.dtos.ApiResponse;
 import com.service.hotelbookingback.dtos.RoomDTO;
 import com.service.hotelbookingback.enums.RoomType;
 import com.service.hotelbookingback.services.RoomService;
@@ -23,7 +23,7 @@ public class RoomController {
 
     @PostMapping("/add")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<Response> addRoom(
+    public ResponseEntity<ApiResponse> addRoom(
             @RequestParam Integer roomNumber,
             @RequestParam RoomType type,
             @RequestParam BigDecimal pricePerNight,
@@ -43,7 +43,7 @@ public class RoomController {
 
     @PutMapping("/update")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<Response> updateRoom(
+    public ResponseEntity<ApiResponse> updateRoom(
             @RequestParam (value = "roomNumber", required = false) Integer roomNumber,
             @RequestParam (value = "type", required = false) RoomType type,
             @RequestParam (value = "pricePerNight", required = false) BigDecimal pricePerNight,
@@ -65,24 +65,24 @@ public class RoomController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<Response> getAllRooms(){
+    public ResponseEntity<ApiResponse<List<RoomDTO>>> getAllRooms(){
         return ResponseEntity.ok(roomService.getAllRooms());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Response> getRoomById(@PathVariable Long id){
+    public ResponseEntity<ApiResponse<RoomDTO>> getRoomById(@PathVariable Long id){
         return ResponseEntity.ok(roomService.getRoomById(id));
     }
 
 
     @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<Response> deleteRoom(@PathVariable Long id){
+    public ResponseEntity<ApiResponse> deleteRoom(@PathVariable Long id){
         return ResponseEntity.ok(roomService.deleteRoom(id));
     }
 
     @GetMapping("/available")
-    public ResponseEntity<Response> getAvailableRooms(
+    public ResponseEntity<ApiResponse<List<RoomDTO>>> getAvailableRooms(
             @RequestParam LocalDateTime checkInDate,
             @RequestParam LocalDateTime checkOutDate,
             @RequestParam(required = false) RoomType roomType
@@ -91,12 +91,12 @@ public class RoomController {
     }
 
     @GetMapping("/types")
-    public ResponseEntity<List<RoomType>> getAllRoomTypes(){
+    public ResponseEntity<ApiResponse<List<RoomType>>> getAllRoomTypes(){
         return ResponseEntity.ok(roomService.getAllRoomTypes());
     }
 
     @GetMapping("/search")
-    public ResponseEntity<Response> searchRoom(@RequestParam String input){
+    public ResponseEntity<ApiResponse<List<RoomDTO>>> searchRoom(@RequestParam String input){
         return ResponseEntity.ok(roomService.searchRoom(input));
     }
 }

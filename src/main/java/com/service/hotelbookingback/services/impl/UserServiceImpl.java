@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -32,9 +33,12 @@ public class UserServiceImpl implements UserService {
     private final ModelMapper modelMapper;
     private final BookingRepository bookingRepository;
 
+    @Value("${jwt.expiration}")
+    private String expiration;
+
 
     @Override
-    public Response registerUser(RegistrationRequest registrationRequest) {
+    public AuthResponse registerUser(RegistrationRequest registrationRequest) {
         UserRole role = UserRole.CUSTOMER;
         if (registrationRequest.getRole() != null) {
             role = registrationRequest.getRole();
@@ -49,7 +53,7 @@ public class UserServiceImpl implements UserService {
                 .isActive(Boolean.TRUE)
                 .build();
         userRepository.save(userToSave);
-        return Response.builder()
+        return AuthResponse.builder()
                 .status(200)
                 .message("User Created Successfully")
                 .build();
@@ -57,60 +61,62 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Response loginUser(LoginRequest loginRequest) {
+    public AuthResponse loginUser(LoginRequest loginRequest) {
         User user = userRepository.findByEmail(loginRequest.getEmail())
                 .orElseThrow(()-> new NotFoundException("Email Not Found"));
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             throw new InvalidCredentialException("Password Doesn't Match");
         }
         String token = jwtUtils.generateToken(user.getEmail());
-        return Response.builder()
+        return AuthResponse.builder()
                 .status(200)
                 .message("User Logged In Successfully")
                 .role(user.getRole())
                 .token(token)
                 .isActive(user.isActive())
-                .expirationTime("6 months")
+                .expirationTime(expiration)
                 .build();
     }
 
     @Override
-    public Response getAllUsers() {
+    public ApiResponse<List<UserDTO>> getAllUsers() {
         List<User> users = userRepository.findAll(Sort.by(Sort.Direction.DESC, "id"));
         List<UserDTO> userDTOList = modelMapper.map(users, new TypeToken<List<UserDTO>>(){}.getType());
-        return Response.builder()
+        return ApiResponse.<List<UserDTO>>builder()
                 .status(200)
                 .message("Success")
-                .users(userDTOList)
+                .data(userDTOList)
                 .build();
     }
 
     @Override
-    public Response getOwnAccountDetails() {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+    public ApiResponse<UserDTO> getOwnAccountDetails() {
+        User existingUser = getCurrentLoggedInUser();
+        UserDTO userDTO = modelMapper.map(existingUser, UserDTO.class);
+        return ApiResponse.<UserDTO>builder()
+                .status(200)
+                .message("Success")
+                .data(userDTO)
+                .build();
+    }
+
+    @Override
+    public ApiResponse<UserDTO> getUserDetails(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(()-> new NotFoundException("User Not Found"));
-        log.info("Inside getOwnAccountDetails User Email is {}", email);
+        log.info("Inside getUserAccount User Email is {}", email);
         UserDTO userDTO = modelMapper.map(user, UserDTO.class);
-
-        return Response.builder()
+        return ApiResponse.<UserDTO>builder()
                 .status(200)
                 .message("Success")
-                .user(userDTO)
+                .data(userDTO)
                 .build();
     }
 
     @Override
-    public User getCurrentLoggedInUser() {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        return userRepository.findByEmail(email)
-                .orElseThrow(()-> new NotFoundException("User Not Found"));
-    }
-
-    @Override
-    public Response updateOwnAccount(UserDTO userDTO) {
+    public ApiResponse updateOwnAccount(UserDTO userDTO) {
         User existingUser = getCurrentLoggedInUser();
-        log.info("Inside Update User");
+        log.info("Inside updateOwnAccount");
         if (userDTO.getEmail() != null) existingUser.setEmail(userDTO.getEmail());
         if (userDTO.getFirstName() != null) existingUser.setFirstName(userDTO.getFirstName());
         if (userDTO.getLastName() != null) existingUser.setLastName(userDTO.getLastName());
@@ -119,31 +125,40 @@ public class UserServiceImpl implements UserService {
             existingUser.setPassword(passwordEncoder.encode(userDTO.getPassword()));
         }
         userRepository.save(existingUser);
-        return Response.builder()
+        return ApiResponse.builder()
                 .status(200)
                 .message("User Updated Successfully")
                 .build();
     }
 
     @Override
-    public Response deleteOwnAccount() {
+    public ApiResponse deleteOwnAccount() {
         User user = getCurrentLoggedInUser();
         userRepository.delete(user);
-        return Response.builder()
+        return ApiResponse.builder()
                 .status(200)
                 .message("User Deleted Successfully")
                 .build();
     }
 
     @Override
-    public Response getMyBookingHistory() {
+    public ApiResponse getMyBookingHistory() {
         User user = getCurrentLoggedInUser();
         List<Booking> bookingList = bookingRepository.findByUserId(user.getId());
         List<BookingDTO> bookingDTOList = modelMapper.map(bookingList, new TypeToken<List<BookingDTO>>(){}.getType());
-        return Response.builder()
+        return ApiResponse.builder()
                 .status(200)
                 .message("Success")
-                .bookings(bookingDTOList)
+                .data(bookingDTOList)
                 .build();
+    }
+
+    @Override
+    public User getCurrentLoggedInUser(){
+        log.info("Inside getOwnAccountDetails");
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(()-> new NotFoundException("User Not Found"));
+        return user;
     }
 }

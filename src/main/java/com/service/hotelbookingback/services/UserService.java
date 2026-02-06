@@ -1,28 +1,28 @@
 package com.service.hotelbookingback.services;
 
-import com.service.hotelbookingback.dtos.LoginRequest;
-import com.service.hotelbookingback.dtos.RegistrationRequest;
-import com.service.hotelbookingback.dtos.Response;
-import com.service.hotelbookingback.dtos.UserDTO;
+import com.service.hotelbookingback.dtos.*;
 import com.service.hotelbookingback.entities.User;
-import com.service.hotelbookingback.exceptions.InvalidCredentialException;
 import com.service.hotelbookingback.exceptions.NotFoundException;
+
+import java.util.List;
 
 public interface UserService {
 
-    Response registerUser(RegistrationRequest registrationRequest);
+    AuthResponse registerUser(RegistrationRequest registrationRequest);
 
-    Response loginUser(LoginRequest loginRequest);
+    AuthResponse loginUser(LoginRequest loginRequest);
 
-    Response getAllUsers();
+    ApiResponse<List<UserDTO>> getAllUsers();
 
-    Response getOwnAccountDetails() throws NotFoundException;
+    ApiResponse<UserDTO> getOwnAccountDetails();
 
-    User getCurrentLoggedInUser();
+    ApiResponse<UserDTO> getUserDetails(String email);
 
-    Response updateOwnAccount(UserDTO userDTO);
+    public User getCurrentLoggedInUser();
 
-    Response deleteOwnAccount();
+    ApiResponse updateOwnAccount(UserDTO userDTO);
 
-    Response getMyBookingHistory();
+    ApiResponse deleteOwnAccount();
+
+    ApiResponse<BookingDTO> getMyBookingHistory();
 }

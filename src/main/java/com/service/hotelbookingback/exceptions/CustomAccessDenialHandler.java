@@ -1,7 +1,7 @@
 package com.service.hotelbookingback.exceptions;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.service.hotelbookingback.dtos.Response;
+import com.service.hotelbookingback.dtos.ApiResponse;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -21,7 +21,7 @@ public class CustomAccessDenialHandler implements AccessDeniedHandler {
 
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
-        Response authErrorResponse = Response.builder()
+        ApiResponse authErrorResponse = ApiResponse.builder()
                 .status(HttpStatus.FORBIDDEN.value()) // 403 Valid Token But Unauthorize Role
                 .message(accessDeniedException.getMessage())
                 .build();

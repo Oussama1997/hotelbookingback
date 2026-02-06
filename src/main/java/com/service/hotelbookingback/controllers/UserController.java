@@ -1,6 +1,6 @@
 package com.service.hotelbookingback.controllers;
 
-import com.service.hotelbookingback.dtos.Response;
+import com.service.hotelbookingback.dtos.ApiResponse;
 import com.service.hotelbookingback.dtos.UserDTO;
 import com.service.hotelbookingback.services.UserService;
 import lombok.RequiredArgsConstructor;
@@ -18,29 +18,29 @@ public class UserController {
 
     @GetMapping("/all")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<Response> getAllUsers(){
+    public ResponseEntity<ApiResponse> getAllUsers(){
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
 
     @PutMapping("/update")
-    public ResponseEntity<Response> updateOwnAccount(@RequestBody UserDTO userDTO){
+    public ResponseEntity<ApiResponse> updateOwnAccount(@RequestBody UserDTO userDTO){
         return ResponseEntity.ok(userService.updateOwnAccount(userDTO));
     }
 
     @DeleteMapping("/delete")
-    public ResponseEntity<Response> deleteOwnAccount(){
+    public ResponseEntity<ApiResponse> deleteOwnAccount(){
         return ResponseEntity.ok(userService.deleteOwnAccount());
     }
 
     @GetMapping("/account")
-    public ResponseEntity<Response> getOwnAccountDetails(){
+    public ResponseEntity<ApiResponse> getOwnAccountDetails(){
         return ResponseEntity.ok(userService.getOwnAccountDetails());
     }
 
 
     @GetMapping("/bookings")
-    public ResponseEntity<Response> getMyBookingHistory(){
+    public ResponseEntity<ApiResponse> getMyBookingHistory(){
         return ResponseEntity.ok(userService.getMyBookingHistory());
     }
 }

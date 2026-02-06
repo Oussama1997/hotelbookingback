@@ -1,6 +1,6 @@
 package com.service.hotelbookingback.exceptions;
 
-import com.service.hotelbookingback.dtos.Response;
+import com.service.hotelbookingback.dtos.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 public class GlobalExceptionHandler{
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Response> handleAllUnknownException(Exception e){
-        Response response = Response.builder()
+    public ResponseEntity<ApiResponse> handleAllUnknownException(Exception e){
+        ApiResponse response = ApiResponse.builder()
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .message(e.getMessage())
                 .build();
@@ -19,8 +19,8 @@ public class GlobalExceptionHandler{
     }
 
     @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<Response> handleNotFoundException(Exception e){
-        Response response = Response.builder()
+    public ResponseEntity<ApiResponse> handleNotFoundException(Exception e){
+        ApiResponse response = ApiResponse.builder()
                 .status(HttpStatus.NOT_FOUND.value())
                 .message(e.getMessage())
                 .build();
@@ -28,8 +28,8 @@ public class GlobalExceptionHandler{
     }
 
     @ExceptionHandler(NameValueRequiredException.class)
-    public ResponseEntity<Response> handleNameValueRequiredException(Exception e){
-        Response response = Response.builder()
+    public ResponseEntity<ApiResponse> handleNameValueRequiredException(Exception e){
+        ApiResponse response = ApiResponse.builder()
                 .status(HttpStatus.BAD_REQUEST.value())
                 .message(e.getMessage())
                 .build();
@@ -37,8 +37,8 @@ public class GlobalExceptionHandler{
     }
 
     @ExceptionHandler(InvalidCredentialException.class)
-    public ResponseEntity<Response> handleInvalidCredentialException(Exception e){
-        Response response = Response.builder()
+    public ResponseEntity<ApiResponse> handleInvalidCredentialException(Exception e){
+        ApiResponse response = ApiResponse.builder()
                 .status(HttpStatus.BAD_REQUEST.value())
                 .message(e.getMessage())
                 .build();
@@ -46,8 +46,8 @@ public class GlobalExceptionHandler{
     }
 
     @ExceptionHandler(InvalidBookingStateAndDateException.class)
-    public ResponseEntity<Response> handleInvalidBookingStateAndDateException(Exception e){
-        Response response = Response.builder()
+    public ResponseEntity<ApiResponse> handleInvalidBookingStateAndDateException(Exception e){
+        ApiResponse response = ApiResponse.builder()
                 .status(HttpStatus.BAD_REQUEST.value())
                 .message(e.getMessage())
                 .build();

@@ -1,11 +1,11 @@
 package com.service.hotelbookingback.services;
 
 import com.service.hotelbookingback.dtos.BookingDTO;
-import com.service.hotelbookingback.dtos.Response;
+import com.service.hotelbookingback.dtos.ApiResponse;
 
 public interface BookingService {
-    Response getAllBookings();
-    Response createBooking(BookingDTO bookingDTO);
-    Response findBookingByReferenceNo(String  bookingReference);
-    Response updateBooking(BookingDTO bookingDTO);
+    ApiResponse getAllBookings();
+    ApiResponse createBooking(BookingDTO bookingDTO);
+    ApiResponse findBookingByReferenceNo(String  bookingReference);
+    ApiResponse updateBooking(BookingDTO bookingDTO);
 }

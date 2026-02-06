@@ -1,7 +1,7 @@
 package com.service.hotelbookingback.exceptions;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.service.hotelbookingback.dtos.Response;
+import com.service.hotelbookingback.dtos.ApiResponse;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -22,7 +22,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
-        Response authErrorResponse = Response.builder()
+        ApiResponse authErrorResponse = ApiResponse.builder()
                 .status(HttpStatus.UNAUTHORIZED.value()) // 401 Invalid Token Kind Of Error
                 .message(authException.getMessage())
                 .build();
