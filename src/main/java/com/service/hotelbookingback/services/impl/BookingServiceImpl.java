@@ -44,14 +44,14 @@ public class BookingServiceImpl implements BookingService {
 
 
     @Override
-    public ApiResponse getAllBookings() {
+    public ApiResponse<List<BookingDTO>> getAllBookings() {
         List<Booking> bookingList =bookingRepository.findAll(Sort.by(Sort.Direction.DESC, "id"));
         List<BookingDTO> bookingDTOList = modelMapper.map(bookingList, new TypeToken<List<BookingDTO>>() {}.getType());
         for(BookingDTO bookingDTO: bookingDTOList){
             bookingDTO.setUser(null);
             bookingDTO.setRoom(null);
         }
-        return ApiResponse.builder()
+        return ApiResponse.<List<BookingDTO>>builder()
                 .status(200)
                 .message("success")
                 .data(bookingDTOList)
@@ -59,7 +59,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public ApiResponse createBooking(BookingDTO bookingDTO) {
+    public ApiResponse<BookingDTO> createBooking(BookingDTO bookingDTO) {
         User currentUser = userService.getCurrentLoggedInUser();
         Room room = roomRepository.findById(bookingDTO.getRoomId())
                 .orElseThrow(()-> new NotFoundException("Room Not Found"));
@@ -83,7 +83,7 @@ public class BookingServiceImpl implements BookingService {
         room.setAvailable(false);
         roomRepository.save(room);
         BookingDTO savedBooking = saveBooking(bookingDTO, room, currentUser);
-        return ApiResponse.builder()
+        return ApiResponse.<BookingDTO>builder()
                 .status(200)
                 .message("Booking is successfully")
                 .data(savedBooking)
@@ -105,6 +105,9 @@ public class BookingServiceImpl implements BookingService {
         booking.setBookingReference(bookingReference);
         booking.setBookingStatus(BookingStatus.BOOKED);
         booking.setPaymentStatus(PaymentStatus.PENDING);
+        if (booking.getSpecialRequests() != null){
+            booking.setSpecialRequests(bookingDTO.getSpecialRequests());
+        }
         booking.setCreatedAt(LocalDateTime.now());
         Booking savedBooking = bookingRepository.save(booking); //save to database
         sendNotification(currentUser,bookingReference, totalPrice);
@@ -127,11 +130,11 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public ApiResponse findBookingByReferenceNo(String bookingReference) {
+    public ApiResponse<BookingDTO> findBookingByReferenceNo(String bookingReference) {
         Booking booking = bookingRepository.findByBookingReference(bookingReference)
                 .orElseThrow(()-> new NotFoundException("Booking with Reference No: " + bookingReference + " Not found"));
         BookingDTO bookingDTO = modelMapper.map(booking, BookingDTO.class);
-        return  ApiResponse.builder()
+        return  ApiResponse.<BookingDTO>builder()
                 .status(200)
                 .message("success")
                 .data(bookingDTO)
@@ -139,7 +142,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public ApiResponse updateBooking(BookingDTO bookingDTO) {
+    public ApiResponse<BookingDTO> updateBooking(BookingDTO bookingDTO) {
         if (bookingDTO.getId() == null) throw new NotFoundException("Booking id is required");
         Booking existingBooking = bookingRepository.findById(bookingDTO.getId())
                 .orElseThrow(()-> new NotFoundException("Booking Not Found"));
@@ -157,8 +160,11 @@ public class BookingServiceImpl implements BookingService {
         if (bookingDTO.getPaymentStatus() != null) {
             existingBooking.setPaymentStatus(bookingDTO.getPaymentStatus());
         }
+        if(bookingDTO.getSpecialRequests() != null){
+            existingBooking.setSpecialRequests(bookingDTO.getSpecialRequests());
+        }
         bookingRepository.save(existingBooking);
-        return ApiResponse.builder()
+        return ApiResponse.<BookingDTO>builder()
                 .status(200)
                 .message("Booking Updated Successfully")
                 .build();

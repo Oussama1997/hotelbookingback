@@ -3,9 +3,11 @@ package com.service.hotelbookingback.services;
 import com.service.hotelbookingback.dtos.BookingDTO;
 import com.service.hotelbookingback.dtos.ApiResponse;
 
+import java.util.List;
+
 public interface BookingService {
-    ApiResponse getAllBookings();
-    ApiResponse createBooking(BookingDTO bookingDTO);
-    ApiResponse findBookingByReferenceNo(String  bookingReference);
-    ApiResponse updateBooking(BookingDTO bookingDTO);
+    ApiResponse<List<BookingDTO>> getAllBookings();
+    ApiResponse<BookingDTO> createBooking(BookingDTO bookingDTO);
+    ApiResponse<BookingDTO> findBookingByReferenceNo(String  bookingReference);
+    ApiResponse<BookingDTO> updateBooking(BookingDTO bookingDTO);
 }

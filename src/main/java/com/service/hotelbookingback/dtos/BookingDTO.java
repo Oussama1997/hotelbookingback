@@ -30,6 +30,7 @@ public class BookingDTO {
     private LocalDate checkOutDate;
     private BigDecimal totalPrice;
     private BookingStatus bookingStatus;
+    private String specialRequests;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
 }
