@@ -80,6 +80,8 @@ public class BookingServiceImpl implements BookingService {
         if (!isAvailable) {
             throw new InvalidBookingStateAndDateException("Room is not available for the selected date ranges");
         }
+        room.setAvailable(false);
+        roomRepository.save(room);
         BookingDTO savedBooking = saveBooking(bookingDTO, room, currentUser);
         return ApiResponse.builder()
                 .status(200)
@@ -144,6 +146,13 @@ public class BookingServiceImpl implements BookingService {
         if (bookingDTO.getBookingStatus() != null) {
             existingBooking.setBookingStatus(bookingDTO.getBookingStatus());
             // Add payment date column & add refund date
+            if(bookingDTO.getBookingStatus().equals(BookingStatus.CANCELED) ||
+                bookingDTO.getBookingStatus().equals(BookingStatus.CHECK_OUT)){
+                Room room = roomRepository.findById(bookingDTO.getRoomId())
+                        .orElseThrow(()-> new NotFoundException("Room Not Found"));
+                room.setAvailable(false);
+                roomRepository.save(room);
+            }
         }
         if (bookingDTO.getPaymentStatus() != null) {
             existingBooking.setPaymentStatus(bookingDTO.getPaymentStatus());

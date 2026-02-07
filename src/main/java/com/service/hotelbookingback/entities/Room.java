@@ -44,6 +44,8 @@ public class Room {
 
     private String imageUrl;
 
+    private boolean isAvailable;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

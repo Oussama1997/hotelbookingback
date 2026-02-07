@@ -25,6 +25,7 @@ public class RoomDTO {
     private BigDecimal pricePerNight;
     private Integer capacity;
     private String description;
+    private boolean isAvailable;
     private String imageUrl;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;

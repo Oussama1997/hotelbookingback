@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -41,6 +42,7 @@ public class RoomServiceImpl implements RoomService {
             String imagePath = saveImage(imageFile);
             roomToSave.setImageUrl(imagePath);
         }
+        roomToSave.setAvailable(true);
         roomRepository.save(roomToSave);
         return ApiResponse.builder()
                 .status(200)
@@ -67,6 +69,7 @@ public class RoomServiceImpl implements RoomService {
         }
         if (roomDTO.getType() != null) existingRoom.setType(roomDTO.getType());
         if(roomDTO.getDescription() != null) existingRoom.setDescription(roomDTO.getDescription());
+        existingRoom.setAvailable(roomDTO.isAvailable());
         roomRepository.save(existingRoom);
         return ApiResponse.builder()
                 .status(200)
