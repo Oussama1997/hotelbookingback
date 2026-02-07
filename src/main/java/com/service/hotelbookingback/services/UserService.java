@@ -3,6 +3,7 @@ package com.service.hotelbookingback.services;
 import com.service.hotelbookingback.dtos.*;
 import com.service.hotelbookingback.entities.User;
 import com.service.hotelbookingback.exceptions.NotFoundException;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -25,4 +26,6 @@ public interface UserService {
     ApiResponse deleteOwnAccount();
 
     ApiResponse<List<BookingDTO>> getMyBookingHistory();
+
+    AuthResponse refreshToken(RefreshTokenRequest request);
 }

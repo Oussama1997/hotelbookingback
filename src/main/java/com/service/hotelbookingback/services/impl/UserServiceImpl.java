@@ -20,6 +20,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -67,14 +69,23 @@ public class UserServiceImpl implements UserService {
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             throw new InvalidCredentialException("Password Doesn't Match");
         }
-        String token = jwtUtils.generateToken(user.getEmail());
+        // Generate tokens
+        String accessToken = jwtUtils.generateToken(user.getEmail());
+        String refreshToken = jwtUtils.generateRefreshToken(user.getEmail());
+        // Calculate expiration details
+        Date expirationDate = jwtUtils.getExpirationDateFromToken(accessToken);
+        long expiresIn = (expirationDate.getTime() - System.currentTimeMillis()) / 1000;
+        String expiresAt = expirationDate.toInstant().toString();
         return AuthResponse.builder()
                 .status(200)
                 .message("User Logged In Successfully")
                 .role(user.getRole())
-                .token(token)
+                .token(accessToken)
+                .refreshToken(refreshToken)
+                .expiresIn(expiresIn)
+                .expiresAt(expiresAt)
                 .isActive(user.isActive())
-                .expirationTime(expiration)
+                .timestamp(LocalDateTime.now())
                 .build();
     }
 
@@ -151,6 +162,46 @@ public class UserServiceImpl implements UserService {
                 .message("Success")
                 .data(bookingDTOList)
                 .build();
+    }
+
+    @Override
+    public AuthResponse refreshToken(RefreshTokenRequest request) {
+        try {
+            String oldRefreshToken = request.getRefreshToken();
+            // Validate refresh token
+            if (!jwtUtils.isTokenValid(oldRefreshToken)) {
+                throw new InvalidCredentialException("Invalid or expired refresh token");
+            }
+            // Extract email from refresh token
+            String email = jwtUtils.getUsernameFromToken(oldRefreshToken);
+            // Verify user exists and is active
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new NotFoundException("User not found"));
+            if (!user.isActive()) {
+                throw new InvalidCredentialException("User account is not active");
+            }
+            // Generate new access token
+            String newAccessToken = jwtUtils.generateToken(email);
+            // Generate new refresh token (optional: you can keep the same one until it expires)
+            String newRefreshToken = jwtUtils.generateRefreshToken(email);
+            // Calculate expiration details
+            Date expirationDate = jwtUtils.getExpirationDateFromToken(newAccessToken);
+            long expiresIn = (expirationDate.getTime() - System.currentTimeMillis()) / 1000;
+            String expiresAt = expirationDate.toInstant().toString();
+            return AuthResponse.builder()
+                    .status(200)
+                    .message("Token refreshed successfully")
+                    .token(newAccessToken)
+                    .refreshToken(newRefreshToken)
+                    .expiresIn(expiresIn)
+                    .expiresAt(expiresAt)
+                    .isActive(user.isActive())
+                    .timestamp(LocalDateTime.now())
+                    .build();
+        } catch (Exception e) {
+            log.error("Error refreshing token: {}", e.getMessage());
+            throw new InvalidCredentialException("Failed to refresh token: " + e.getMessage());
+        }
     }
 
     @Override

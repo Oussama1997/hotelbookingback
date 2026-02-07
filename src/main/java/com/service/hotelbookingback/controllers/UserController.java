@@ -5,6 +5,7 @@ import com.service.hotelbookingback.dtos.BookingDTO;
 import com.service.hotelbookingback.dtos.UserDTO;
 import com.service.hotelbookingback.services.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -38,7 +39,16 @@ public class UserController {
 
     @GetMapping("/account")
     public ResponseEntity<ApiResponse<UserDTO>> getOwnAccountDetails(){
-        return ResponseEntity.ok(userService.getOwnAccountDetails());
+        try {
+            ApiResponse<UserDTO> response = userService.getOwnAccountDetails();
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.<UserDTO>builder()
+                            .status(401)
+                            .message("Authentication required")
+                            .build());
+        }
     }
 
 

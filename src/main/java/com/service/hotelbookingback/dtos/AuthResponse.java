@@ -21,7 +21,9 @@ public class AuthResponse {
     private UserRole role;
     private UserDTO user;
     private boolean isActive;
-    private String expirationTime;
+    private long expiresIn;      // Duration in seconds
+    private String expiresAt;    // ISO date string of expiry
+    private String refreshToken; // Add refresh token field
     @Builder.Default
     private LocalDateTime timestamp = LocalDateTime.now();
 }
