@@ -27,6 +27,7 @@ public class UserDTO {
 
     private String firstName;
     private String lastName;
+    private String username;
     private String phoneNumber;
     private UserRole role;
     private boolean isActive;

@@ -5,6 +5,7 @@ import com.service.hotelbookingback.dtos.RoomDTO;
 import com.service.hotelbookingback.enums.RoomType;
 import com.service.hotelbookingback.services.RoomService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;

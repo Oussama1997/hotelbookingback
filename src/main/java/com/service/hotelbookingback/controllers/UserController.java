@@ -1,8 +1,6 @@
 package com.service.hotelbookingback.controllers;
 
-import com.service.hotelbookingback.dtos.ApiResponse;
-import com.service.hotelbookingback.dtos.BookingDTO;
-import com.service.hotelbookingback.dtos.UserDTO;
+import com.service.hotelbookingback.dtos.*;
 import com.service.hotelbookingback.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,13 +24,17 @@ public class UserController {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
-
-    @PutMapping("/update")
-    public ResponseEntity<ApiResponse> updateOwnAccount(@RequestBody UserDTO userDTO){
-        return ResponseEntity.ok(userService.updateOwnAccount(userDTO));
+    @PutMapping("/account/update")
+    public ResponseEntity<ApiResponse<UserDTO>> updateOwnAccount(@RequestBody UpdateProfileRequest request){
+        return ResponseEntity.ok(userService.updateProfile(request));
     }
 
-    @DeleteMapping("/delete")
+    @PutMapping("/account/change-password")
+    public ResponseEntity<ApiResponse> changePassword(@RequestBody ChangePasswordRequest request){
+        return ResponseEntity.ok(userService.changePassword(request));
+    }
+
+    @DeleteMapping("/account/delete")
     public ResponseEntity<ApiResponse> deleteOwnAccount(){
         return ResponseEntity.ok(userService.deleteOwnAccount());
     }
@@ -49,11 +51,5 @@ public class UserController {
                             .message("Authentication required")
                             .build());
         }
-    }
-
-
-    @GetMapping("/bookings")
-    public ResponseEntity<ApiResponse<List<BookingDTO>>> getMyBookingHistory(){
-        return ResponseEntity.ok(userService.getMyBookingHistory());
     }
 }

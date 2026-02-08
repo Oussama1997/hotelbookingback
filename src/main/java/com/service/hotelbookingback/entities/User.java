@@ -34,6 +34,7 @@ public class User {
 
     private String firstName;
     private String lastName;
+    private String username;
 
     @NotBlank(message = "Phone Number is required")
     @Column(name = "phone_number")

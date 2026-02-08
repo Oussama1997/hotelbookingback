@@ -2,8 +2,6 @@ package com.service.hotelbookingback.services;
 
 import com.service.hotelbookingback.dtos.*;
 import com.service.hotelbookingback.entities.User;
-import com.service.hotelbookingback.exceptions.NotFoundException;
-import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -19,9 +17,11 @@ public interface UserService {
 
     ApiResponse<UserDTO> getUserDetails(String email);
 
-    public User getCurrentLoggedInUser();
+    User getCurrentLoggedInUser();
 
-    ApiResponse updateOwnAccount(UserDTO userDTO);
+    ApiResponse<UserDTO> updateProfile(UpdateProfileRequest request);
+
+    ApiResponse changePassword(ChangePasswordRequest request);
 
     ApiResponse deleteOwnAccount();
 

@@ -19,6 +19,12 @@ public class BookingController {
     private final BookingService bookingService;
     private final UserService userService;
 
+    @GetMapping("/all")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<ApiResponse<List<BookingDTO>>> getAllBookings(){
+        return ResponseEntity.ok(bookingService.getAllBookings());
+    }
+
     @PostMapping("/add")
     @PreAuthorize("hasAuthority('CUSTOMER')")
     public ResponseEntity<ApiResponse<BookingDTO>> createBooking(@RequestBody BookingDTO bookingDTO){

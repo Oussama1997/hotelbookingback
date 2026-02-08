@@ -30,6 +30,9 @@ public class RegistrationRequest {
     @NotBlank(message = "LastName is required")
     private String lastName;
 
+    @NotBlank(message = "LastName is required")
+    private String username;
+
     @NotBlank(message = "Phone Number is required")
     private String phoneNumber;
 

@@ -48,6 +48,7 @@ public class UserServiceImpl implements UserService {
         User userToSave = User.builder()
                 .firstName(registrationRequest.getFirstName())
                 .lastName(registrationRequest.getLastName())
+                .username(registrationRequest.getUsername())
                 .email(registrationRequest.getEmail())
                 .password(passwordEncoder.encode(registrationRequest.getPassword()))
                 .phoneNumber(registrationRequest.getPhoneNumber())
@@ -125,27 +126,54 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ApiResponse updateOwnAccount(UserDTO userDTO) {
+    public ApiResponse<UserDTO> updateProfile(UpdateProfileRequest request) {
         User existingUser = getCurrentLoggedInUser();
         log.info("Inside updateOwnAccount");
-        if (userDTO.getEmail() != null) existingUser.setEmail(userDTO.getEmail());
-        if (userDTO.getFirstName() != null) existingUser.setFirstName(userDTO.getFirstName());
-        if (userDTO.getLastName() != null) existingUser.setLastName(userDTO.getLastName());
-        if (userDTO.getPhoneNumber() != null) existingUser.setPhoneNumber(userDTO.getPhoneNumber());
-        if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
-            existingUser.setPassword(passwordEncoder.encode(userDTO.getPassword()));
-        }
+        if (request.getFirstName() != null) existingUser.setFirstName(request.getFirstName());
+        if (request.getLastName() != null) existingUser.setLastName(request.getLastName());
+        if (request.getUsername() != null) existingUser.setUsername(request.getUsername());
+        if (request.getPhoneNumber() != null) existingUser.setPhoneNumber(request.getPhoneNumber());
         userRepository.save(existingUser);
-        return ApiResponse.builder()
+        UserDTO userDTO = modelMapper.map(existingUser, UserDTO.class);
+        return ApiResponse.<UserDTO>builder()
                 .status(200)
                 .message("User Updated Successfully")
+                .data(userDTO)
+                .build();
+    }
+
+    @Override
+    public ApiResponse changePassword(ChangePasswordRequest request) {
+        User existingUser = getCurrentLoggedInUser();
+        log.info("Inside changePassword");
+        String errorMessage = "Invalid data";
+        if (request.getConfirmPassword() != null && !request.getConfirmPassword().isEmpty()
+            && request.getNewPassword() != null && !request.getNewPassword().isEmpty()
+            && request.getCurrentPassword() != null && !request.getCurrentPassword().isEmpty()
+            && request.getConfirmPassword().equals(request.getNewPassword())
+        ) {
+            if (request.getCurrentPassword().equals(passwordEncoder.encode(existingUser.getPassword()))) {
+                existingUser.setPassword(passwordEncoder.encode(request.getNewPassword()));
+                userRepository.save(existingUser);
+                return ApiResponse.builder()
+                        .status(200)
+                        .message("Password Updated Successfully")
+                        .build();
+            } else {
+                errorMessage = "Invalid Current Password";
+            }
+        }
+        return ApiResponse.builder()
+                .status(404)
+                .message(errorMessage)
                 .build();
     }
 
     @Override
     public ApiResponse deleteOwnAccount() {
-        User user = getCurrentLoggedInUser();
-        userRepository.delete(user);
+        User existingUser = getCurrentLoggedInUser();
+        existingUser.setActive(false);
+        userRepository.save(existingUser);
         return ApiResponse.builder()
                 .status(200)
                 .message("User Deleted Successfully")
