@@ -2,17 +2,17 @@ package com.service.hotelbookingback.controllers;
 
 import com.service.hotelbookingback.dtos.ApiResponse;
 import com.service.hotelbookingback.dtos.RoomDTO;
+import com.service.hotelbookingback.dtos.SearchRoomRequest;
 import com.service.hotelbookingback.enums.RoomType;
 import com.service.hotelbookingback.services.RoomService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -32,7 +32,7 @@ public class RoomController {
             @RequestParam String  description,
             @RequestParam MultipartFile imageFile
     ){
-        RoomDTO roomDTO =RoomDTO.builder()
+        RoomDTO roomDTO = RoomDTO.builder()
                 .roomNumber(roomNumber)
                 .type(type)
                 .pricePerNight(pricePerNight)
@@ -84,11 +84,10 @@ public class RoomController {
 
     @GetMapping("/available")
     public ResponseEntity<ApiResponse<List<RoomDTO>>> getAvailableRooms(
-            @RequestParam LocalDateTime checkInDate,
-            @RequestParam LocalDateTime checkOutDate,
-            @RequestParam(required = false) RoomType roomType
+            @RequestParam LocalDate checkInDate,
+            @RequestParam LocalDate checkOutDate
     ){
-        return ResponseEntity.ok(roomService.getAvailableRooms(checkInDate, checkOutDate, roomType));
+        return ResponseEntity.ok(roomService.getAvailableRooms(checkInDate, checkOutDate));
     }
 
     @GetMapping("/types")
@@ -96,8 +95,8 @@ public class RoomController {
         return ResponseEntity.ok(roomService.getAllRoomTypes());
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<ApiResponse<List<RoomDTO>>> searchRoom(@RequestParam String input){
-        return ResponseEntity.ok(roomService.searchRoom(input));
+    @PostMapping("/search")
+    public ResponseEntity<ApiResponse<List<RoomDTO>>> searchRoom(@RequestBody SearchRoomRequest request){
+        return ResponseEntity.ok(roomService.searchRoom(request));
     }
 }

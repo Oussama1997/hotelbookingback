@@ -20,7 +20,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
                 WHERE b.room.id = :roomId
                   AND :checkInDate <= b.checkOutDate
                   AND :checkOutDate >= b.checkInDate
-                  AND b.bookingStatus IN ('BOOKED', 'CHECKED_IN')
+                  AND b.bookingStatus IN ('CONFIRMED', 'CHECKED_IN')
             """)
     boolean isRoomAvailable(@Param("roomId") Long roomId,
                             @Param("checkInDate") LocalDate checkInDate,

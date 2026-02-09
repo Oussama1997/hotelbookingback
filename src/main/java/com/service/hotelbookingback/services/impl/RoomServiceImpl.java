@@ -2,9 +2,11 @@ package com.service.hotelbookingback.services.impl;
 
 import com.service.hotelbookingback.dtos.ApiResponse;
 import com.service.hotelbookingback.dtos.RoomDTO;
+import com.service.hotelbookingback.dtos.SearchRoomRequest;
 import com.service.hotelbookingback.entities.Room;
 import com.service.hotelbookingback.enums.RoomType;
 import com.service.hotelbookingback.exceptions.InvalidBookingStateAndDateException;
+import com.service.hotelbookingback.exceptions.InvalidRequestException;
 import com.service.hotelbookingback.exceptions.NotFoundException;
 import com.service.hotelbookingback.repositories.RoomRepository;
 import com.service.hotelbookingback.services.RoomService;
@@ -18,10 +20,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -42,8 +43,6 @@ public class RoomServiceImpl implements RoomService {
             String imagePath = saveImage(imageFile);
             roomToSave.setImageUrl(imagePath);
         }
-        roomToSave.setAvailable(true);
-        roomRepository.save(roomToSave);
         return ApiResponse.builder()
                 .status(200)
                 .message("Room successfully added")
@@ -69,7 +68,6 @@ public class RoomServiceImpl implements RoomService {
         }
         if (roomDTO.getType() != null) existingRoom.setType(roomDTO.getType());
         if(roomDTO.getDescription() != null) existingRoom.setDescription(roomDTO.getDescription());
-        existingRoom.setAvailable(roomDTO.isAvailable());
         roomRepository.save(existingRoom);
         return ApiResponse.builder()
                 .status(200)
@@ -113,9 +111,9 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public ApiResponse<List<RoomDTO>> getAvailableRooms(LocalDateTime checkInDate, LocalDateTime checkOutDate, RoomType roomType) {
+    public ApiResponse<List<RoomDTO>> getAvailableRooms(LocalDate checkInDate, LocalDate checkOutDate) {
         //validation: Ensure the check-in date is not before today
-        if (checkInDate.isBefore(LocalDateTime.now())){
+        if (checkInDate.isBefore(LocalDate.now())){
             throw new InvalidBookingStateAndDateException("check in date cannot be before today ");
         }
         //validation: Ensure the check-out date is not before check in date
@@ -126,7 +124,7 @@ public class RoomServiceImpl implements RoomService {
         if (checkInDate.isEqual(checkOutDate)){
             throw new InvalidBookingStateAndDateException("check in date cannot be equal to check out date ");
         }
-        List<Room> roomList = roomRepository.findAvailableRooms(checkInDate, checkOutDate, roomType);
+        List<Room> roomList = roomRepository.findAvailableRooms(checkInDate, checkOutDate);
         List<RoomDTO> roomDTOList = modelMapper.map(roomList,new TypeToken<List<RoomDTO>>() {}.getType());
         return ApiResponse.<List<RoomDTO>>builder()
                 .status(200)
@@ -145,9 +143,54 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public ApiResponse<List<RoomDTO>> searchRoom(String input) {
+    public ApiResponse<List<RoomDTO>> searchRooms(String input) {
         List<Room> roomList = roomRepository.searchRooms(input);
         List<RoomDTO> roomDTOList = modelMapper.map(roomList,new TypeToken<List<RoomDTO>>() {}.getType());
+        return ApiResponse.<List<RoomDTO>>builder()
+                .status(200)
+                .message("success")
+                .data(roomDTOList)
+                .build();
+    }
+
+    @Override
+    public ApiResponse<List<RoomDTO>> searchRoom(SearchRoomRequest request) {
+        // Validate request is not null
+        if (request == null) {
+            throw new InvalidRequestException("Search request cannot be null");
+        }
+        // Validate dates are not null
+        if (request.getCheckInDate() == null || request.getCheckOutDate() == null) {
+            throw new InvalidRequestException("Check-in and check-out dates must be specified");
+        }
+        //validation: Ensure the check-in date is not before today
+        if (request.getCheckInDate().isBefore(LocalDate.now())){
+            throw new InvalidBookingStateAndDateException("check in date cannot be before today ");
+        }
+        //validation: Ensure the check-out date is not before check in date
+        if (request.getCheckOutDate().isBefore(request.getCheckInDate())){
+            throw new InvalidBookingStateAndDateException("check out date cannot be before check in date ");
+        }
+        //validation: Ensure the check-in date is not same as check out date
+        if (request.getCheckInDate().isEqual(request.getCheckOutDate())){
+            throw new InvalidBookingStateAndDateException("check in date cannot be equal to check out date ");
+        }
+        // Get available rooms
+        List<Room> availableRooms = roomRepository.findAvailableRooms(
+                request.getCheckInDate(),
+                request.getCheckOutDate()
+        );
+        // Apply filters only when criteria are specified
+        List<Room> filteredRooms = availableRooms.stream()
+                .filter(room -> room != null)
+                .filter(room -> request.getGuests() == 0 || room.getCapacity() >= request.getGuests())
+                .filter(room -> request.getRoomType() == null || request.getRoomType().equals(room.getType()))
+                .toList();
+        // Convert to DTOs
+        List<RoomDTO> roomDTOList = modelMapper.map(
+                filteredRooms,
+                new TypeToken<List<RoomDTO>>() {}.getType()
+        );
         return ApiResponse.<List<RoomDTO>>builder()
                 .status(200)
                 .message("success")

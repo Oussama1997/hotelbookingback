@@ -25,7 +25,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -41,7 +40,6 @@ public class BookingServiceImpl implements BookingService {
     private final ModelMapper modelMapper;
     private final UserService userService;
     private final BookingCodeGenerator bookingCodeGenerator;
-
 
     @Override
     public ApiResponse<List<BookingDTO>> getAllBookings() {
@@ -80,8 +78,6 @@ public class BookingServiceImpl implements BookingService {
         if (!isAvailable) {
             throw new InvalidBookingStateAndDateException("Room is not available for the selected date ranges");
         }
-        room.setAvailable(false);
-        roomRepository.save(room);
         BookingDTO savedBooking = saveBooking(bookingDTO, room, currentUser);
         return ApiResponse.<BookingDTO>builder()
                 .status(200)
@@ -103,13 +99,12 @@ public class BookingServiceImpl implements BookingService {
         booking.setCheckOutDate(bookingDTO.getCheckOutDate());
         booking.setTotalPrice(totalPrice);
         booking.setBookingReference(bookingReference);
-        booking.setBookingStatus(BookingStatus.BOOKED);
+        booking.setBookingStatus(BookingStatus.PENDING);
         booking.setPaymentStatus(PaymentStatus.PENDING);
         if (booking.getSpecialRequests() != null){
             booking.setSpecialRequests(bookingDTO.getSpecialRequests());
         }
-        booking.setCreatedAt(LocalDateTime.now());
-        Booking savedBooking = bookingRepository.save(booking); //save to database
+        Booking savedBooking = bookingRepository.save(booking);
         sendNotification(currentUser,bookingReference, totalPrice);
         return modelMapper.map(savedBooking, BookingDTO.class);
     }
@@ -149,13 +144,6 @@ public class BookingServiceImpl implements BookingService {
         if (bookingDTO.getBookingStatus() != null) {
             existingBooking.setBookingStatus(bookingDTO.getBookingStatus());
             // Add payment date column & add refund date
-            if(bookingDTO.getBookingStatus().equals(BookingStatus.CANCELED) ||
-                bookingDTO.getBookingStatus().equals(BookingStatus.CHECK_OUT)){
-                Room room = roomRepository.findById(bookingDTO.getRoomId())
-                        .orElseThrow(()-> new NotFoundException("Room Not Found"));
-                room.setAvailable(false);
-                roomRepository.save(room);
-            }
         }
         if (bookingDTO.getPaymentStatus() != null) {
             existingBooking.setPaymentStatus(bookingDTO.getPaymentStatus());
