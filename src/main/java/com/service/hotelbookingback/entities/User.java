@@ -45,6 +45,15 @@ public class User {
 
     private boolean isActive;
 
+    private String avatarFileName;
+
+    @Transient
+    public String getAvatarUrl() {
+        return avatarFileName != null ?
+                "/api/images/avatars/" + avatarFileName :
+                "/api/images/avatars/default-avatar.png";
+    }
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

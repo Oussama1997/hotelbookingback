@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -20,12 +21,13 @@ import java.time.LocalDateTime;
 public class RoomDTO {
 
     private Long id;
-    private Integer roomNumber;
+    private String roomNumber;
     private RoomType type;
     private BigDecimal pricePerNight;
     private Integer capacity;
     private String description;
-    private String imageUrl;
+    private List<String> imageUrls;
+    private String primaryImageUrl;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
 }

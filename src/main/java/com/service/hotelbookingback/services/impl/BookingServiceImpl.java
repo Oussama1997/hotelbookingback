@@ -13,7 +13,6 @@ import com.service.hotelbookingback.exceptions.NotFoundException;
 import com.service.hotelbookingback.services.NotificationService;
 import com.service.hotelbookingback.repositories.BookingRepository;
 import com.service.hotelbookingback.repositories.RoomRepository;
-import com.service.hotelbookingback.services.BookingCodeGenerator;
 import com.service.hotelbookingback.services.BookingService;
 import com.service.hotelbookingback.services.UserService;
 import lombok.RequiredArgsConstructor;
@@ -79,6 +78,8 @@ public class BookingServiceImpl implements BookingService {
             throw new InvalidBookingStateAndDateException("Room is not available for the selected date ranges");
         }
         BookingDTO savedBooking = saveBooking(bookingDTO, room, currentUser);
+        savedBooking.setRoom(null);
+        savedBooking.setUser(null);
         return ApiResponse.<BookingDTO>builder()
                 .status(200)
                 .message("Booking is successfully")
@@ -100,7 +101,7 @@ public class BookingServiceImpl implements BookingService {
         booking.setTotalPrice(totalPrice);
         booking.setBookingReference(bookingReference);
         booking.setBookingStatus(BookingStatus.PENDING);
-        booking.setPaymentStatus(PaymentStatus.PENDING);
+        //booking.setPaymentStatus(PaymentStatus.PENDING);
         if (booking.getSpecialRequests() != null){
             booking.setSpecialRequests(bookingDTO.getSpecialRequests());
         }
@@ -144,9 +145,6 @@ public class BookingServiceImpl implements BookingService {
         if (bookingDTO.getBookingStatus() != null) {
             existingBooking.setBookingStatus(bookingDTO.getBookingStatus());
             // Add payment date column & add refund date
-        }
-        if (bookingDTO.getPaymentStatus() != null) {
-            existingBooking.setPaymentStatus(bookingDTO.getPaymentStatus());
         }
         if(bookingDTO.getSpecialRequests() != null){
             existingBooking.setSpecialRequests(bookingDTO.getSpecialRequests());

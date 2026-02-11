@@ -4,9 +4,11 @@ import com.service.hotelbookingback.dtos.*;
 import com.service.hotelbookingback.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -51,5 +53,18 @@ public class UserController {
                             .message("Authentication required")
                             .build());
         }
+    }
+
+    @PutMapping(value = "/{id}/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<UserDTO>> updateAvatar(
+            @PathVariable Long id,
+            @RequestPart("avatar") MultipartFile avatar) {
+        return ResponseEntity.ok(userService.updateAvatar(id, avatar));
+    }
+
+    // Remove user avatar (set to default)
+    @DeleteMapping("/{id}/avatar")
+    public ResponseEntity<ApiResponse<UserDTO>> removeAvatar(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.removeAvatar(id));
     }
 }

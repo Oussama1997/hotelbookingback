@@ -1,11 +1,16 @@
 package com.service.hotelbookingback.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.service.hotelbookingback.dtos.ApiResponse;
 import com.service.hotelbookingback.dtos.RoomDTO;
+import com.service.hotelbookingback.dtos.RoomRequestDTO;
 import com.service.hotelbookingback.dtos.SearchRoomRequest;
 import com.service.hotelbookingback.enums.RoomType;
 import com.service.hotelbookingback.services.RoomService;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -21,48 +26,26 @@ import java.util.List;
 public class RoomController {
 
     private final RoomService roomService;
+    private final ModelMapper modelMapper;
 
-    @PostMapping("/add")
+    @PostMapping(value = "/add", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<ApiResponse> addRoom(
-            @RequestParam Integer roomNumber,
-            @RequestParam RoomType type,
-            @RequestParam BigDecimal pricePerNight,
-            @RequestParam Integer capacity,
-            @RequestParam String  description,
-            @RequestParam MultipartFile imageFile
-    ){
-        RoomDTO roomDTO = RoomDTO.builder()
-                .roomNumber(roomNumber)
-                .type(type)
-                .pricePerNight(pricePerNight)
-                .capacity(capacity)
-                .description(description)
-                .build();
-        return  ResponseEntity.ok(roomService.addRoom(roomDTO, imageFile));
+    public ResponseEntity<ApiResponse<RoomDTO>> createRoom(
+            @RequestPart("room") String roomJson,
+            @RequestPart(value = "images", required = false) MultipartFile[] images) throws JsonProcessingException {
+        RoomRequestDTO roomRequest = modelMapper.map(roomJson,new TypeToken<RoomRequestDTO>() {}.getType());
+        return ResponseEntity.ok(roomService.createRoom(roomRequest, images));
     }
 
-    @PutMapping("/update")
+    @PutMapping(value = "/update/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<ApiResponse> updateRoom(
-            @RequestParam (value = "roomNumber", required = false) Integer roomNumber,
-            @RequestParam (value = "type", required = false) RoomType type,
-            @RequestParam (value = "pricePerNight", required = false) BigDecimal pricePerNight,
-            @RequestParam (value = "capacity", required = false) Integer capacity,
-            @RequestParam (value = "description", required = false) String  description,
-            @RequestParam (value = "imageFile", required = false) MultipartFile imageFile,
-            @RequestParam (value = "id", required = true) Long id
-    ){
-        RoomDTO roomDTO =RoomDTO.builder()
-                .id(id)
-                .roomNumber(roomNumber)
-                .type(type)
-                .pricePerNight(pricePerNight)
-                .capacity(capacity)
-                .description(description)
-                .build();
-        return  ResponseEntity.ok(roomService.updateRoom(roomDTO, imageFile));
-
+    public ResponseEntity<ApiResponse<RoomDTO>> updateRoom(
+            @PathVariable Long id,
+            @RequestPart("room") String roomJson,
+            @RequestPart(value = "images", required = false) MultipartFile[] images,
+            @RequestParam(value = "imagesToDelete", required = false) List<String> imagesToDelete) throws JsonProcessingException {
+        RoomRequestDTO roomRequest = modelMapper.map(roomJson,new TypeToken<RoomRequestDTO>() {}.getType());
+        return ResponseEntity.ok(roomService.updateRoom(id, roomRequest, images, imagesToDelete));
     }
 
     @GetMapping("/all")
@@ -78,11 +61,12 @@ public class RoomController {
 
     @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<ApiResponse> deleteRoom(@PathVariable Long id){
-        return ResponseEntity.ok(roomService.deleteRoom(id));
+    public ResponseEntity<Void> deleteRoom(@PathVariable Long id){
+        roomService.deleteRoom(id);
+        return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/available")
+    @GetMapping("/availables")
     public ResponseEntity<ApiResponse<List<RoomDTO>>> getAvailableRooms(
             @RequestParam LocalDate checkInDate,
             @RequestParam LocalDate checkOutDate
@@ -97,6 +81,22 @@ public class RoomController {
 
     @PostMapping("/search")
     public ResponseEntity<ApiResponse<List<RoomDTO>>> searchRoom(@RequestBody SearchRoomRequest request){
-        return ResponseEntity.ok(roomService.searchRoom(request));
+        return ResponseEntity.ok(roomService.searchRooms(request));
+    }
+
+    // Add images to existing room
+    @PostMapping(value = "/{id}/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse> addRoomImages(
+            @PathVariable Long id,
+            @RequestPart("images") MultipartFile[] images) {
+        return ResponseEntity.ok(roomService.addImagesToRoom(id, images));
+    }
+
+    // Delete specific images from room
+    @DeleteMapping("/{id}/images")
+    public ResponseEntity<ApiResponse> deleteRoomImages(
+            @PathVariable Long id,
+            @RequestParam List<String> imageFileNames) {
+        return ResponseEntity.ok(roomService.deleteImagesFromRoom(id, imageFileNames));
     }
 }

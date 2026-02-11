@@ -2,6 +2,7 @@ package com.service.hotelbookingback.services;
 
 import com.service.hotelbookingback.dtos.*;
 import com.service.hotelbookingback.entities.User;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -28,4 +29,8 @@ public interface UserService {
     ApiResponse<List<BookingDTO>> getMyBookingHistory();
 
     AuthResponse refreshToken(RefreshTokenRequest request);
+
+    ApiResponse<UserDTO> updateAvatar(Long userId, MultipartFile avatar);
+
+    ApiResponse<UserDTO> removeAvatar(Long userId);
 }

@@ -2,14 +2,17 @@ package com.service.hotelbookingback.services.impl;
 
 import com.service.hotelbookingback.dtos.ApiResponse;
 import com.service.hotelbookingback.dtos.RoomDTO;
+import com.service.hotelbookingback.dtos.RoomRequestDTO;
 import com.service.hotelbookingback.dtos.SearchRoomRequest;
 import com.service.hotelbookingback.entities.Room;
+import com.service.hotelbookingback.enums.ImageType;
 import com.service.hotelbookingback.enums.RoomType;
 import com.service.hotelbookingback.exceptions.InvalidBookingStateAndDateException;
 import com.service.hotelbookingback.exceptions.InvalidRequestException;
 import com.service.hotelbookingback.exceptions.NotFoundException;
 import com.service.hotelbookingback.repositories.RoomRepository;
 import com.service.hotelbookingback.services.RoomService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -23,62 +26,111 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@Transactional
 public class RoomServiceImpl implements RoomService {
 
     private final RoomRepository roomRepository;
     private final ModelMapper modelMapper;
-    private static final String IMAGE_DIRECTORY = System.getProperty("user.dir") + "\\product-image\\";
-    //image directory for our frontens appp
-    //private static final String IMAGE_DIRECTORY_FRONTEND = "/Users/dennismac/phegonDev/hotel-react-frontend/public/rooms/";
+    private final FileStorageService fileStorageService;
 
     @Override
-    public ApiResponse addRoom(RoomDTO roomDTO, MultipartFile imageFile) {
-        Room roomToSave = modelMapper.map(roomDTO, Room.class);
-        if (imageFile != null){
-            String imagePath = saveImage(imageFile);
-            roomToSave.setImageUrl(imagePath);
+    public ApiResponse<RoomDTO> createRoom(RoomRequestDTO roomRequest, MultipartFile[] images) {
+        Room roomToSave = modelMapper.map(roomRequest, Room.class);
+        if (images != null && images.length > 0) {
+            List<String> savedFileNames = fileStorageService.storeRoomImages(images);
+            roomToSave.setImageFileNames(savedFileNames);
         }
-        return ApiResponse.builder()
+        roomRepository.save(roomToSave);
+        return ApiResponse.<RoomDTO>builder()
                 .status(200)
                 .message("Room successfully added")
                 .build();
     }
 
     @Override
-    public ApiResponse updateRoom(RoomDTO roomDTO, MultipartFile imageFile) {
-        Room existingRoom = roomRepository.findById(roomDTO.getId())
+    public ApiResponse<RoomDTO> updateRoom(Long id, RoomRequestDTO roomRequest, MultipartFile[] newImages, List<String> imagesToDelete) {
+        Room existingRoom = roomRepository.findById(id)
                 .orElseThrow(()-> new NotFoundException("Room not found"));
-        if (imageFile != null && !imageFile.isEmpty()){
-            String imagePath = saveImage(imageFile);
-            existingRoom.setImageUrl(imagePath);
+        if (roomRequest.getRoomNumber() != null){
+            existingRoom.setRoomNumber(roomRequest.getRoomNumber());
         }
-        if (roomDTO.getRoomNumber() != null && roomDTO.getRoomNumber() >= 0){
-            existingRoom.setRoomNumber(roomDTO.getRoomNumber());
+        if (roomRequest.getPricePerNight() != null && roomRequest.getPricePerNight().compareTo(BigDecimal.ZERO) > 0){
+            existingRoom.setPricePerNight(roomRequest.getPricePerNight());
         }
-        if (roomDTO.getPricePerNight() != null && roomDTO.getPricePerNight().compareTo(BigDecimal.ZERO) >= 0){
-            existingRoom.setPricePerNight(roomDTO.getPricePerNight());
+        if (roomRequest.getCapacity() > 0){
+            existingRoom.setCapacity(roomRequest.getCapacity());
         }
-        if (roomDTO.getCapacity() != null && roomDTO.getCapacity() > 0){
-            existingRoom.setCapacity(roomDTO.getCapacity());
+        if (roomRequest.getType() != null) existingRoom.setType(roomRequest.getType());
+        if(roomRequest.getDescription() != null) existingRoom.setDescription(roomRequest.getDescription());
+        if (imagesToDelete != null && !imagesToDelete.isEmpty()) {
+            List<String> currentImages = existingRoom.getImageFileNames();
+            List<String> imagesToKeep = currentImages.stream()
+                    .filter(image -> !imagesToDelete.contains(image))
+                    .collect(Collectors.toList());
+            // Delete files from storage
+            fileStorageService.deleteFiles(imagesToDelete, ImageType.ROOM_IMAGE);
+            existingRoom.setImageFileNames(imagesToKeep);
         }
-        if (roomDTO.getType() != null) existingRoom.setType(roomDTO.getType());
-        if(roomDTO.getDescription() != null) existingRoom.setDescription(roomDTO.getDescription());
+        // Add new images
+        if (newImages != null && newImages.length > 0) {
+            List<String> newFileNames = fileStorageService.storeRoomImages(newImages);
+            existingRoom.getImageFileNames().addAll(newFileNames);
+        }
         roomRepository.save(existingRoom);
-        return ApiResponse.builder()
+        return ApiResponse.<RoomDTO>builder()
                 .status(200)
                 .message("Room updated successfully")
                 .build();
     }
 
     @Override
+    public ApiResponse<RoomDTO> addImagesToRoom(Long id, MultipartFile[] images) {
+        Room room = roomRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Room not found"));
+
+        List<String> newFileNames = fileStorageService.storeRoomImages(images);
+        room.getImageFileNames().addAll(newFileNames);
+
+        roomRepository.save(room);
+        return ApiResponse.<RoomDTO>builder()
+                .status(200)
+                .message("Added Successfully")
+                .build();
+    }
+
+    @Override
+    public ApiResponse<RoomDTO> deleteImagesFromRoom(Long id, List<String> imageFileNames) {
+        Room room = roomRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Room not found"));
+
+        List<String> currentImages = room.getImageFileNames();
+        List<String> imagesToKeep = currentImages.stream()
+                .filter(image -> !imageFileNames.contains(image))
+                .collect(Collectors.toList());
+
+        // Delete files from storage
+        fileStorageService.deleteFiles(imageFileNames, ImageType.ROOM_IMAGE);
+
+        room.setImageFileNames(imagesToKeep);
+        Room updatedRoom = roomRepository.save(room);
+        return ApiResponse.<RoomDTO>builder()
+                .status(200)
+                .message("Deleted Successfully")
+                .build();
+    }
+
+    @Override
     public ApiResponse<List<RoomDTO>> getAllRooms() {
-        List<Room> roomList = roomRepository.findAll(Sort.by(Sort.Direction.DESC, "id"));
-        List<RoomDTO> roomDTOList = modelMapper.map(roomList,new TypeToken<List<RoomDTO>>() {}.getType());
+        List<RoomDTO> roomDTOList = roomRepository.findAll(Sort.by(Sort.Direction.DESC, "id"))
+                .stream().map(this::convertToResponseDTO)
+                .collect(Collectors.toList());
         return ApiResponse.<List<RoomDTO>>builder()
                 .status(200)
                 .message("success")
@@ -90,20 +142,22 @@ public class RoomServiceImpl implements RoomService {
     public ApiResponse<RoomDTO> getRoomById(Long id) {
         Room room = roomRepository.findById(id)
                 .orElseThrow(()-> new NotFoundException("Room not found"));
-        RoomDTO roomDTO = modelMapper.map(room, RoomDTO.class);
         return ApiResponse.<RoomDTO>builder()
                 .status(200)
                 .message("success")
-                .data(roomDTO)
+                .data(convertToResponseDTO(room))
                 .build();
     }
 
     @Override
     public ApiResponse deleteRoom(Long id) {
-        if (!roomRepository.existsById(id)){
-            throw new NotFoundException("Room not found");
+        Room room = roomRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Room not found"));
+        // Delete all associated images
+        if (room.getImageFileNames() != null && !room.getImageFileNames().isEmpty()) {
+            fileStorageService.deleteFiles(room.getImageFileNames(), ImageType.ROOM_IMAGE);
         }
-        roomRepository.deleteById(id);
+        roomRepository.delete(room);
         return ApiResponse.builder()
                 .status(200)
                 .message("Room Deleted Successfully")
@@ -124,8 +178,9 @@ public class RoomServiceImpl implements RoomService {
         if (checkInDate.isEqual(checkOutDate)){
             throw new InvalidBookingStateAndDateException("check in date cannot be equal to check out date ");
         }
-        List<Room> roomList = roomRepository.findAvailableRooms(checkInDate, checkOutDate);
-        List<RoomDTO> roomDTOList = modelMapper.map(roomList,new TypeToken<List<RoomDTO>>() {}.getType());
+        List<RoomDTO> roomDTOList = roomRepository.findAvailableRooms(checkInDate, checkOutDate)
+                .stream().map(this::convertToResponseDTO)
+                .collect(Collectors.toList());
         return ApiResponse.<List<RoomDTO>>builder()
                 .status(200)
                 .message("success")
@@ -144,8 +199,9 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     public ApiResponse<List<RoomDTO>> searchRooms(String input) {
-        List<Room> roomList = roomRepository.searchRooms(input);
-        List<RoomDTO> roomDTOList = modelMapper.map(roomList,new TypeToken<List<RoomDTO>>() {}.getType());
+        List<RoomDTO> roomDTOList = roomRepository.searchRooms(input)
+                .stream().map(this::convertToResponseDTO)
+                .collect(Collectors.toList());
         return ApiResponse.<List<RoomDTO>>builder()
                 .status(200)
                 .message("success")
@@ -154,7 +210,7 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public ApiResponse<List<RoomDTO>> searchRoom(SearchRoomRequest request) {
+    public ApiResponse<List<RoomDTO>> searchRooms(SearchRoomRequest request) {
         // Validate request is not null
         if (request == null) {
             throw new InvalidRequestException("Search request cannot be null");
@@ -175,83 +231,34 @@ public class RoomServiceImpl implements RoomService {
         if (request.getCheckInDate().isEqual(request.getCheckOutDate())){
             throw new InvalidBookingStateAndDateException("check in date cannot be equal to check out date ");
         }
-        // Get available rooms
-        List<Room> availableRooms = roomRepository.findAvailableRooms(
-                request.getCheckInDate(),
-                request.getCheckOutDate()
-        );
-        // Apply filters only when criteria are specified
-        List<Room> filteredRooms = availableRooms.stream()
-                .filter(room -> room != null)
-                .filter(room -> request.getGuests() == 0 || room.getCapacity() >= request.getGuests())
-                .filter(room -> request.getRoomType() == null || request.getRoomType().equals(room.getType()))
-                .toList();
-        // Convert to DTOs
-        List<RoomDTO> roomDTOList = modelMapper.map(
-                filteredRooms,
-                new TypeToken<List<RoomDTO>>() {}.getType()
-        );
+        List<RoomDTO> filteredRooms = null;
+        if(request.getRoomType() == null && request.getRoomType() == null ){
+            filteredRooms = roomRepository
+                    .findAvailableRooms(request.getCheckInDate(),request.getCheckOutDate())
+                    .stream().map(this::convertToResponseDTO)
+                    .collect(Collectors.toList());
+
+        } else {
+            // Apply filters only when criteria are specified
+            filteredRooms = roomRepository
+                    .findAvailableRooms(request.getCheckInDate(),request.getCheckOutDate())
+                    .stream()
+                    .filter(room -> request.getGuests() == 0 || room.getCapacity() >= request.getGuests())
+                    .filter(room -> request.getRoomType() == null || request.getRoomType().equals(room.getType()))
+                    .map(this::convertToResponseDTO)
+                    .collect(Collectors.toList());
+        }
         return ApiResponse.<List<RoomDTO>>builder()
                 .status(200)
                 .message("success")
-                .data(roomDTOList)
+                .data(filteredRooms)
                 .build();
     }
 
-    //save image to backend folder
-    private String saveImage(MultipartFile imageFile){
-        if (!imageFile.getContentType().startsWith("image/")){
-            throw new IllegalArgumentException("Only Image files are allowed");
-        }
-
-        //Create directory to store image if it doesn exist
-        File directory = new File(IMAGE_DIRECTORY);
-
-        if (!directory.exists()){
-            directory.mkdir();
-        }
-        //Generate uniwue file name for the image
-        String uniqueFileName = UUID.randomUUID() + "_" + imageFile.getOriginalFilename();
-        //get the absolute path of the image
-        String  imagePath = IMAGE_DIRECTORY + uniqueFileName;
-
-        try {
-            File destinationFile = new File(imagePath);
-            imageFile.transferTo(destinationFile);
-        }catch (Exception ex){
-            throw  new IllegalArgumentException(ex.getMessage());
-        }
-
-        return imagePath;
-
+    private RoomDTO convertToResponseDTO(Room room) {
+        RoomDTO dto = modelMapper.map(room, RoomDTO.class);
+        dto.setImageUrls(room.getImageUrls());
+        dto.setPrimaryImageUrl(room.getPrimaryImageUrl());
+        return dto;
     }
-
-
-    //save image to frontend folder
-    /*private String saveImageToFrontend(MultipartFile imageFile){
-        if (!imageFile.getContentType().startsWith("image/")){
-            throw new IllegalArgumentException("Only Image files are allowed");
-        }
-
-        //Create directory to store image if it doesn exist
-        File directory = new File(IMAGE_DIRECTORY_FRONTEND);
-
-        if (!directory.exists()){
-            directory.mkdir();
-        }
-        //Generate uniwue file name for the image
-        String uniqueFileName = UUID.randomUUID() + "_" + imageFile.getOriginalFilename();
-        //get the absolute path of the image
-        String  imagePath = IMAGE_DIRECTORY_FRONTEND + uniqueFileName;
-
-        try {
-            File destinationFile = new File(imagePath);
-            imageFile.transferTo(destinationFile);
-        }catch (Exception ex){
-            throw  new IllegalArgumentException(ex.getMessage());
-        }
-
-        return "/rooms/" + uniqueFileName;
-
-    }*/
 }

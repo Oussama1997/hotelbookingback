@@ -4,6 +4,7 @@ import com.service.hotelbookingback.enums.RoomType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,22 +14,24 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "rooms")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 public class Room {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Min(value = 1, message = "Room Number must be at least 1")
-    @Column(unique = true)
-    private Integer roomNumber;
+    //@NotBlank(message = "Room Number is required")
+    //@Column(unique = true)
+    private String roomNumber;
 
     @Enumerated(EnumType.STRING)
     private RoomType type;
@@ -42,7 +45,24 @@ public class Room {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    private String imageUrl;
+    @ElementCollection
+    @CollectionTable(name = "room_images", joinColumns = @JoinColumn(name = "room_id"))
+    @Column(name = "image_file_name")
+    private List<String> imageFileNames = new ArrayList<>();
+
+    @Transient
+    public List<String> getImageUrls() {
+        return imageFileNames.stream()
+                .map(fileName -> "/api/images/rooms/" + fileName)
+                .collect(Collectors.toList());
+    }
+
+    @Transient
+    public String getPrimaryImageUrl() {
+        return !imageFileNames.isEmpty() ?
+                "/api/images/rooms/" + imageFileNames.get(0) :
+                "/api/images/rooms/default-room.jpg";
+    }
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

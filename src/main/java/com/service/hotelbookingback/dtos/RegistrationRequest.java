@@ -35,6 +35,4 @@ public class RegistrationRequest {
 
     @NotBlank(message = "Phone Number is required")
     private String phoneNumber;
-
-    private UserRole role;
 }

@@ -3,6 +3,7 @@ package com.service.hotelbookingback.services.impl;
 import com.service.hotelbookingback.dtos.*;
 import com.service.hotelbookingback.entities.Booking;
 import com.service.hotelbookingback.entities.User;
+import com.service.hotelbookingback.enums.ImageType;
 import com.service.hotelbookingback.enums.UserRole;
 import com.service.hotelbookingback.exceptions.InvalidCredentialException;
 import com.service.hotelbookingback.exceptions.NotFoundException;
@@ -19,6 +20,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -34,17 +36,13 @@ public class UserServiceImpl implements UserService {
     private final JwtUtils jwtUtils;
     private final ModelMapper modelMapper;
     private final BookingRepository bookingRepository;
+    private final FileStorageService fileStorageService;
 
     @Value("${jwt.expiration}")
     private String expiration;
 
-
     @Override
     public AuthResponse registerUser(RegistrationRequest registrationRequest) {
-        UserRole role = UserRole.CUSTOMER;
-        if (registrationRequest.getRole() != null) {
-            role = registrationRequest.getRole();
-        }
         User userToSave = User.builder()
                 .firstName(registrationRequest.getFirstName())
                 .lastName(registrationRequest.getLastName())
@@ -52,7 +50,7 @@ public class UserServiceImpl implements UserService {
                 .email(registrationRequest.getEmail())
                 .password(passwordEncoder.encode(registrationRequest.getPassword()))
                 .phoneNumber(registrationRequest.getPhoneNumber())
-                .role(role)
+                .role(UserRole.CUSTOMER)
                 .isActive(Boolean.TRUE)
                 .build();
         userRepository.save(userToSave);
@@ -239,5 +237,53 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(()-> new NotFoundException("User Not Found"));
         return user;
+    }
+
+    @Override
+    public ApiResponse<UserDTO> updateAvatar(Long userId, MultipartFile avatar) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Delete old avatar if exists
+        if (user.getAvatarFileName() != null && !user.getAvatarFileName().isEmpty()) {
+            fileStorageService.deleteFile(user.getAvatarFileName(), ImageType.USER_AVATAR);
+        }
+
+        // Store new avatar
+        String fileName = fileStorageService.storeUserAvatar(avatar);
+        user.setAvatarFileName(fileName);
+
+        User savedUser = userRepository.save(user);
+        return ApiResponse.<UserDTO>builder()
+                .status(200)
+                .message("Success")
+                .data(convertToResponseDTO(savedUser))
+                .build();
+    }
+
+    @Override
+    public ApiResponse<UserDTO> removeAvatar(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Delete avatar file if exists
+        if (user.getAvatarFileName() != null && !user.getAvatarFileName().isEmpty()) {
+            fileStorageService.deleteFile(user.getAvatarFileName(), ImageType.USER_AVATAR);
+        }
+
+        // Set to null to use default avatar
+        user.setAvatarFileName(null);
+
+        User savedUser = userRepository.save(user);
+        return ApiResponse.<UserDTO>builder()
+                .status(200)
+                .message("User Deleted Successfully")
+                .data(convertToResponseDTO(savedUser))
+                .build();
+    }
+
+    private UserDTO convertToResponseDTO(User user) {
+        UserDTO dto = modelMapper.map(user, UserDTO.class);
+        return dto;
     }
 }

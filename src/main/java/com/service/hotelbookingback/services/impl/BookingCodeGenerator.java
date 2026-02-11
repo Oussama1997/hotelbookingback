@@ -1,4 +1,4 @@
-package com.service.hotelbookingback.services;
+package com.service.hotelbookingback.services.impl;
 
 import com.service.hotelbookingback.entities.BookingReference;
 import com.service.hotelbookingback.repositories.BookingReferenceRepository;

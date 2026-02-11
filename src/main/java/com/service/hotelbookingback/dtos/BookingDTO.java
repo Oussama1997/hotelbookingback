@@ -25,12 +25,12 @@ public class BookingDTO {
     private UserDTO user;
     private RoomDTO room;
     private Long roomId;
-    private PaymentStatus paymentStatus;
     private LocalDate checkInDate;
     private LocalDate checkOutDate;
     private BigDecimal totalPrice;
     private BookingStatus bookingStatus;
     private String specialRequests;
+    private String bookingReference;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
 }
