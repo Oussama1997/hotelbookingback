@@ -3,7 +3,6 @@ package com.service.hotelbookingback.entities;
 import com.service.hotelbookingback.enums.PaymentGateway;
 import com.service.hotelbookingback.enums.PaymentStatus;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,7 +11,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -21,16 +19,17 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PaymentEntity {
+public class Payment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(unique = true)
-    private Long transactionId;
+    private String transactionId;
 
     private BigDecimal amount;
+    private String currency;
 
     @Enumerated(EnumType.STRING)
     private PaymentGateway paymentGateway;
@@ -38,7 +37,7 @@ public class PaymentEntity {
     private LocalDateTime paymentDate;
 
     @Enumerated(EnumType.STRING)
-    private PaymentStatus paymentStatus;
+    private PaymentStatus status;
 
     private String bookingReference;
     private String failureReason;

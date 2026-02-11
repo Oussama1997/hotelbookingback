@@ -1,4 +1,4 @@
-package com.service.hotelbookingback.dtos;
+package com.service.hotelbookingback.dtos.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

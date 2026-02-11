@@ -1,7 +1,8 @@
-package com.service.hotelbookingback.dtos;
+package com.service.hotelbookingback.dtos.payment;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.service.hotelbookingback.dtos.BookingDTO;
 import com.service.hotelbookingback.enums.PaymentGateway;
 import com.service.hotelbookingback.enums.PaymentStatus;
 import lombok.AllArgsConstructor;

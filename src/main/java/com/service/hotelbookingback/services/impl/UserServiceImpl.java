@@ -1,6 +1,7 @@
 package com.service.hotelbookingback.services.impl;
 
 import com.service.hotelbookingback.dtos.*;
+import com.service.hotelbookingback.dtos.auth.*;
 import com.service.hotelbookingback.entities.Booking;
 import com.service.hotelbookingback.entities.User;
 import com.service.hotelbookingback.enums.ImageType;
@@ -283,7 +284,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private UserDTO convertToResponseDTO(User user) {
-        UserDTO dto = modelMapper.map(user, UserDTO.class);
-        return dto;
+        UserDTO userDTO = modelMapper.map(user, UserDTO.class);
+        return userDTO;
     }
 }

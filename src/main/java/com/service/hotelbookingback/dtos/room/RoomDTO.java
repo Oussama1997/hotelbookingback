@@ -1,4 +1,4 @@
-package com.service.hotelbookingback.dtos;
+package com.service.hotelbookingback.dtos.room;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;

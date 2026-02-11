@@ -1,7 +1,6 @@
 package com.service.hotelbookingback.entities;
 
 import com.service.hotelbookingback.enums.BookingStatus;
-import com.service.hotelbookingback.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,9 +32,6 @@ public class Booking {
     @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "room_id")
     private Room room;
-
-    @Enumerated(EnumType.STRING)
-    private PaymentStatus paymentStatus;
 
     private LocalDate checkInDate;
     private LocalDate checkOutDate;

@@ -1,6 +1,7 @@
 package com.service.hotelbookingback.services;
 
 import com.service.hotelbookingback.dtos.*;
+import com.service.hotelbookingback.dtos.auth.*;
 import com.service.hotelbookingback.entities.User;
 import org.springframework.web.multipart.MultipartFile;
 

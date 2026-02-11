@@ -1,6 +1,8 @@
 package com.service.hotelbookingback.controllers;
 
 import com.service.hotelbookingback.dtos.*;
+import com.service.hotelbookingback.dtos.auth.ChangePasswordRequest;
+import com.service.hotelbookingback.dtos.auth.UpdateProfileRequest;
 import com.service.hotelbookingback.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

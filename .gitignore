@@ -46,6 +46,7 @@ application-local.properties
 application-dev.yml
 application-dev.properties
 /product-image/
+uploads/
 
 # ===== Test reports =====
 /surefire-reports/

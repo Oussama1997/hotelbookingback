@@ -1,4 +1,4 @@
-package com.service.hotelbookingback.dtos;
+package com.service.hotelbookingback.dtos.auth;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

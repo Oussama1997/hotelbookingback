@@ -1,7 +1,10 @@
 package com.service.hotelbookingback.repositories;
 
-import com.service.hotelbookingback.entities.PaymentEntity;
+import com.service.hotelbookingback.entities.Payment;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface PaymentRepository extends JpaRepository<PaymentEntity, Long> {
+import java.util.Optional;
+
+public interface PaymentRepository extends JpaRepository<Payment, Long> {
+    Optional<Payment> findByBookingReference(String bookingReference);
 }

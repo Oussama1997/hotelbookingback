@@ -2,9 +2,9 @@ package com.service.hotelbookingback.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.service.hotelbookingback.dtos.ApiResponse;
-import com.service.hotelbookingback.dtos.RoomDTO;
-import com.service.hotelbookingback.dtos.RoomRequestDTO;
-import com.service.hotelbookingback.dtos.SearchRoomRequest;
+import com.service.hotelbookingback.dtos.room.RoomDTO;
+import com.service.hotelbookingback.dtos.room.RoomRequestDTO;
+import com.service.hotelbookingback.dtos.room.SearchRoomRequest;
 import com.service.hotelbookingback.enums.RoomType;
 import com.service.hotelbookingback.services.RoomService;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +16,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 

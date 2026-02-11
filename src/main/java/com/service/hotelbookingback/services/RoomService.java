@@ -1,9 +1,9 @@
 package com.service.hotelbookingback.services;
 
 import com.service.hotelbookingback.dtos.ApiResponse;
-import com.service.hotelbookingback.dtos.RoomDTO;
-import com.service.hotelbookingback.dtos.RoomRequestDTO;
-import com.service.hotelbookingback.dtos.SearchRoomRequest;
+import com.service.hotelbookingback.dtos.room.RoomDTO;
+import com.service.hotelbookingback.dtos.room.RoomRequestDTO;
+import com.service.hotelbookingback.dtos.room.SearchRoomRequest;
 import com.service.hotelbookingback.enums.RoomType;
 import org.springframework.web.multipart.MultipartFile;
 

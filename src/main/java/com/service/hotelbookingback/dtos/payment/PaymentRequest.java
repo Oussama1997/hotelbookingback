@@ -1,4 +1,4 @@
-package com.service.hotelbookingback.payments.dtos;
+package com.service.hotelbookingback.dtos.payment;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.NotBlank;
@@ -18,7 +18,7 @@ public class PaymentRequest {
     private String bookingReference;
     private BigDecimal amount;
 
-    private Long transactionId;
+    private String transactionId;
     private boolean success;
     private String failureReason;
 

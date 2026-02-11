@@ -1,4 +1,4 @@
-package com.service.hotelbookingback.dtos;
+package com.service.hotelbookingback.dtos.room;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.service.hotelbookingback.enums.RoomType;

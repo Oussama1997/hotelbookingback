@@ -1,6 +1,7 @@
-package com.service.hotelbookingback.dtos;
+package com.service.hotelbookingback.dtos.auth;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.service.hotelbookingback.dtos.UserDTO;
 import com.service.hotelbookingback.enums.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,9 +1,9 @@
 package com.service.hotelbookingback.controllers;
 
-import com.service.hotelbookingback.dtos.AuthResponse;
-import com.service.hotelbookingback.dtos.LoginRequest;
-import com.service.hotelbookingback.dtos.RefreshTokenRequest;
-import com.service.hotelbookingback.dtos.RegistrationRequest;
+import com.service.hotelbookingback.dtos.auth.AuthResponse;
+import com.service.hotelbookingback.dtos.auth.LoginRequest;
+import com.service.hotelbookingback.dtos.auth.RefreshTokenRequest;
+import com.service.hotelbookingback.dtos.auth.RegistrationRequest;
 import com.service.hotelbookingback.exceptions.InvalidCredentialException;
 import com.service.hotelbookingback.exceptions.NotFoundException;
 import com.service.hotelbookingback.services.UserService;

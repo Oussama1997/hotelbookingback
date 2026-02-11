@@ -1,9 +1,9 @@
 package com.service.hotelbookingback.services.impl;
 
 import com.service.hotelbookingback.dtos.ApiResponse;
-import com.service.hotelbookingback.dtos.RoomDTO;
-import com.service.hotelbookingback.dtos.RoomRequestDTO;
-import com.service.hotelbookingback.dtos.SearchRoomRequest;
+import com.service.hotelbookingback.dtos.room.RoomDTO;
+import com.service.hotelbookingback.dtos.room.RoomRequestDTO;
+import com.service.hotelbookingback.dtos.room.SearchRoomRequest;
 import com.service.hotelbookingback.entities.Room;
 import com.service.hotelbookingback.enums.ImageType;
 import com.service.hotelbookingback.enums.RoomType;
@@ -16,18 +16,14 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.TypeToken;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -232,7 +228,7 @@ public class RoomServiceImpl implements RoomService {
             throw new InvalidBookingStateAndDateException("check in date cannot be equal to check out date ");
         }
         List<RoomDTO> filteredRooms = null;
-        if(request.getRoomType() == null && request.getRoomType() == null ){
+        if(request.getRoomType() == null){
             filteredRooms = roomRepository
                     .findAvailableRooms(request.getCheckInDate(),request.getCheckOutDate())
                     .stream().map(this::convertToResponseDTO)
