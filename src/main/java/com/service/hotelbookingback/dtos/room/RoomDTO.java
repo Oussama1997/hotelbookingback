@@ -20,7 +20,6 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class RoomDTO {
 
-    private Long id;
     private String roomNumber;
     private RoomType type;
     private BigDecimal pricePerNight;

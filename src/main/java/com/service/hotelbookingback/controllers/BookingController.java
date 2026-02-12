@@ -37,15 +37,25 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.findBookingByReferenceNo(reference));
     }
 
-    @PutMapping("/update")
+    /*@PutMapping("/update")
     @PreAuthorize("hasAuthority('CUSTOMER')")
     public ResponseEntity<ApiResponse<BookingDTO>> updateBooking(@RequestBody BookingDTO bookingDTO){
         return ResponseEntity.ok(bookingService.updateBooking(bookingDTO));
-    }
+    }*/
 
     @PreAuthorize("hasAuthority('CUSTOMER')")
     @GetMapping("/account/all")
     public ResponseEntity<ApiResponse<List<BookingDTO>>> getMyBookingHistory(){
         return ResponseEntity.ok(userService.getMyBookingHistory());
+    }
+
+    @PutMapping("/{ref}/check-in")
+    public ResponseEntity<ApiResponse<BookingDTO>> checkIn(@PathVariable String ref) {
+        return ResponseEntity.ok(bookingService.checkIn(ref));
+    }
+
+    @PutMapping("/{ref}/check-out")
+    public ResponseEntity<ApiResponse<BookingDTO>> checkOut(@PathVariable String ref) {
+        return ResponseEntity.ok(bookingService.checkOut(ref));
     }
 }

@@ -24,13 +24,14 @@ public class BookingDTO {
     private Long id;
     private UserDTO user;
     private RoomDTO room;
-    private Long roomId;
+    private String roomNumber;
     private LocalDate checkInDate;
     private LocalDate checkOutDate;
     private BigDecimal totalPrice;
     private BookingStatus bookingStatus;
     private String specialRequests;
     private String bookingReference;
+    private int guests;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
 }

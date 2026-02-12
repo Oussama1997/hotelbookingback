@@ -1,0 +1,27 @@
+<div xmlns:th="http://www.thymeleaf.org">
+
+    <h2>💳 Payment Successful</h2>
+
+    <p>Hello <b th:text="${name}"></b>,</p>
+
+    <p>Your payment has been processed successfully.</p>
+
+    <ul>
+        <li><b>Transaction ID:</b> <span th:text="${transactionId}"></span></li>
+        <li><b>Booking Reference:</b> <span th:text="${bookingRef}"></span></li>
+        <li><b>Amount Paid:</b> <span th:text="${amount}"></span></li>
+    </ul>
+
+    <p>
+        Please click here to view all the information regarding your reservation :
+        <br/><br/>
+        <a th:href="${bookingUrl}"
+           style="background:#27ae60;color:white;padding:10px 18px;text-decoration:none;border-radius:5px">
+            View your Booking
+        </a>
+    </p>
+
+    <p>Your booking is now fully confirmed.</p>
+    <p>We wish you a wonderful stay ✨</p>
+
+</div>

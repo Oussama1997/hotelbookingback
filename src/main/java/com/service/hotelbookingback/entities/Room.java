@@ -29,8 +29,8 @@ public class Room {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //@NotBlank(message = "Room Number is required")
-    //@Column(unique = true)
+    @NotBlank(message = "Room Number is required")
+    @Column(unique = true)
     private String roomNumber;
 
     @Enumerated(EnumType.STRING)

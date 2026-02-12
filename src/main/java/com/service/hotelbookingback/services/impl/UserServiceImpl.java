@@ -4,6 +4,7 @@ import com.service.hotelbookingback.dtos.*;
 import com.service.hotelbookingback.dtos.auth.*;
 import com.service.hotelbookingback.entities.Booking;
 import com.service.hotelbookingback.entities.User;
+import com.service.hotelbookingback.enums.EmailTemplate;
 import com.service.hotelbookingback.enums.ImageType;
 import com.service.hotelbookingback.enums.UserRole;
 import com.service.hotelbookingback.exceptions.InvalidCredentialException;
@@ -11,6 +12,7 @@ import com.service.hotelbookingback.exceptions.NotFoundException;
 import com.service.hotelbookingback.repositories.BookingRepository;
 import com.service.hotelbookingback.repositories.UserRepository;
 import com.service.hotelbookingback.security.JwtUtils;
+import com.service.hotelbookingback.services.EmailService;
 import com.service.hotelbookingback.services.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +27,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +42,7 @@ public class UserServiceImpl implements UserService {
     private final ModelMapper modelMapper;
     private final BookingRepository bookingRepository;
     private final FileStorageService fileStorageService;
+    private final EmailService emailService;
 
     @Value("${jwt.expiration}")
     private String expiration;
@@ -54,12 +59,22 @@ public class UserServiceImpl implements UserService {
                 .role(UserRole.CUSTOMER)
                 .isActive(Boolean.TRUE)
                 .build();
-        userRepository.save(userToSave);
+        User savedUser = userRepository.save(userToSave);
+        sendNotifWel(savedUser);
         return AuthResponse.builder()
                 .status(200)
                 .message("User Created Successfully")
                 .build();
 
+    }
+
+    private void sendNotifWel(User user){
+        //send notification via email
+        Map<String, Object> vars = new HashMap<>();
+        vars.put("name", user.getLastName() + " " + user.getFirstName());
+
+        emailService.sendTemplateEmail(user.getEmail(),
+                EmailTemplate.BOOKING_CREATION, vars);// sending email
     }
 
     @Override

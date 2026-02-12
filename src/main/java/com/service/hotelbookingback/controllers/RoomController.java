@@ -36,15 +36,15 @@ public class RoomController {
         return ResponseEntity.ok(roomService.createRoom(roomRequest, images));
     }
 
-    @PutMapping(value = "/update/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/update/{roomNumber}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<RoomDTO>> updateRoom(
-            @PathVariable Long id,
+            @PathVariable String roomNumber,
             @RequestPart("room") String roomJson,
             @RequestPart(value = "images", required = false) MultipartFile[] images,
             @RequestParam(value = "imagesToDelete", required = false) List<String> imagesToDelete) throws JsonProcessingException {
         RoomRequestDTO roomRequest = modelMapper.map(roomJson,new TypeToken<RoomRequestDTO>() {}.getType());
-        return ResponseEntity.ok(roomService.updateRoom(id, roomRequest, images, imagesToDelete));
+        return ResponseEntity.ok(roomService.updateRoom(roomNumber, roomRequest, images, imagesToDelete));
     }
 
     @GetMapping("/all")
@@ -52,16 +52,21 @@ public class RoomController {
         return ResponseEntity.ok(roomService.getAllRooms());
     }
 
-    @GetMapping("/{id}")
+    /*@GetMapping("/{id}")
     public ResponseEntity<ApiResponse<RoomDTO>> getRoomById(@PathVariable Long id){
         return ResponseEntity.ok(roomService.getRoomById(id));
+    }*/
+
+    @GetMapping("/{roomNumber}")
+    public ResponseEntity<ApiResponse<RoomDTO>> getRoomByNumber(@PathVariable String roomNumber){
+        return ResponseEntity.ok(roomService.getRoomByNumber(roomNumber));
     }
 
 
     @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<Void> deleteRoom(@PathVariable Long id){
-        roomService.deleteRoom(id);
+    public ResponseEntity<Void> deleteRoom(@PathVariable String roomNumber){
+        roomService.deleteRoom(roomNumber);
         return ResponseEntity.noContent().build();
     }
 

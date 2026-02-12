@@ -1,6 +1,7 @@
 package com.service.hotelbookingback.entities;
 
 import com.service.hotelbookingback.enums.BookingStatus;
+import com.service.hotelbookingback.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -37,9 +38,17 @@ public class Booking {
     private LocalDate checkOutDate;
     private BigDecimal totalPrice;
     private String bookingReference;
+    private int guests;
 
     @Enumerated(EnumType.STRING)
     private BookingStatus bookingStatus;
+
+    @Column(name = "payment_deadline")
+    private LocalDateTime paymentDeadline;
+
+    @Column(name = "payment_status")
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus paymentStatus;
 
     @Column(columnDefinition = "TEXT")
     private String specialRequests;

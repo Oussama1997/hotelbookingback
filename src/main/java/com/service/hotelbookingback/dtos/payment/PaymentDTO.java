@@ -25,7 +25,8 @@ public class PaymentDTO {
     private BookingDTO booking;
     private Long transactionId;
     private BigDecimal amount;
-    private PaymentGateway paymentMethod; //e,g Paypal. Stripe, flutterwave, paystack
+    private String currency;
+    private PaymentGateway paymentMethod;
     private LocalDateTime paymentDate;
     private PaymentStatus status;
     private String bookingReference;

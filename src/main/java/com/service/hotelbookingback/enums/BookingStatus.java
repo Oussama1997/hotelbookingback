@@ -1,5 +1,12 @@
 package com.service.hotelbookingback.enums;
 
 public enum BookingStatus {
-    CONFIRMED, CHECKED_IN, CHECKED_OUT, CANCELED, PENDING, EXPIRED, FAILED;
+    PENDING_PAYMENT,
+    CONFIRMED,
+    CHECKED_IN,
+    CHECKED_OUT,
+    COMPLETED,
+    CANCELLED,
+    NO_SHOW,
+    REFUNDED
 }

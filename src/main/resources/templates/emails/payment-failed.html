@@ -1,0 +1,21 @@
+<div xmlns:th="http://www.thymeleaf.org">
+
+    <h2>⚠️ Payment Failed</h2>
+
+    <p>Hello <b th:text="${name}"></b>,</p>
+
+    <p>Unfortunately your payment could not be processed.</p>
+
+    <ul>
+        <li>Booking Ref: <b th:text="${bookingRef}"></b></li>
+        <li>Amount: <b th:text="${amount}"></b></li>
+    </ul>
+
+    <p>Please try again using another card.</p>
+
+    <a th:href="${paymentLink}"
+       style="background:#2b6cb0;color:white;padding:10px 20px;text-decoration:none;border-radius:5px">
+        Retry Payment
+    </a>
+
+</div>

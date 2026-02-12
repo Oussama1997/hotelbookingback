@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface RoomRepository extends JpaRepository<Room, Long> {
 
@@ -35,4 +36,6 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
                    OR LOWER(r.description) LIKE LOWER(CONCAT('%', :searchParam, '%'))
             """)
     List<Room> searchRooms(@Param("searchParam") String searchParam);
+
+    Optional<Room> findByRoomNumber(String roomNumber);
 }

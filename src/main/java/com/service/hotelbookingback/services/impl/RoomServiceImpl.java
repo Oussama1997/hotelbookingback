@@ -51,8 +51,8 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public ApiResponse<RoomDTO> updateRoom(Long id, RoomRequestDTO roomRequest, MultipartFile[] newImages, List<String> imagesToDelete) {
-        Room existingRoom = roomRepository.findById(id)
+    public ApiResponse<RoomDTO> updateRoom(String roomNumber, RoomRequestDTO roomRequest, MultipartFile[] newImages, List<String> imagesToDelete) {
+        Room existingRoom = roomRepository.findByRoomNumber(roomNumber)
                 .orElseThrow(()-> new NotFoundException("Room not found"));
         if (roomRequest.getRoomNumber() != null){
             existingRoom.setRoomNumber(roomRequest.getRoomNumber());
@@ -135,8 +135,8 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public ApiResponse<RoomDTO> getRoomById(Long id) {
-        Room room = roomRepository.findById(id)
+    public ApiResponse<RoomDTO> getRoomByNumber(String roomNumber) {
+        Room room = roomRepository.findByRoomNumber(roomNumber)
                 .orElseThrow(()-> new NotFoundException("Room not found"));
         return ApiResponse.<RoomDTO>builder()
                 .status(200)
@@ -146,8 +146,8 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public ApiResponse deleteRoom(Long id) {
-        Room room = roomRepository.findById(id)
+    public ApiResponse deleteRoom(String roomNumber) {
+        Room room = roomRepository.findByRoomNumber(roomNumber)
                 .orElseThrow(() -> new RuntimeException("Room not found"));
         // Delete all associated images
         if (room.getImageFileNames() != null && !room.getImageFileNames().isEmpty()) {

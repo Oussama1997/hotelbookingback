@@ -1,6 +1,7 @@
 package com.service.hotelbookingback.controllers;
 
 import com.service.hotelbookingback.dtos.payment.CreatePaymentRequest;
+import com.service.hotelbookingback.dtos.payment.PaymentIntentRequest;
 import com.service.hotelbookingback.entities.Payment;
 import com.service.hotelbookingback.services.impl.StripeService;
 import lombok.RequiredArgsConstructor;
@@ -19,12 +20,8 @@ public class PaymentController {
     private final StripeService stripeService;
 
     @PostMapping("/create-payment-intent")
-    public ResponseEntity<?> createPaymentIntent(@RequestBody Map<String, Object> request) throws Exception {
-
-        Long amount = Long.valueOf(request.get("amount").toString());
-        String currency = request.get("currency").toString();
-
-        return ResponseEntity.ok(stripeService.createPaymentIntent(amount, currency));
+    public ResponseEntity<?> createPaymentIntent(@RequestBody PaymentIntentRequest request) throws Exception {
+        return ResponseEntity.ok(stripeService.createPaymentIntent(request));
     }
 
     @PostMapping("/process")
