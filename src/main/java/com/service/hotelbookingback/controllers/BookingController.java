@@ -49,13 +49,4 @@ public class BookingController {
         return ResponseEntity.ok(userService.getMyBookingHistory());
     }
 
-    @PutMapping("/{ref}/check-in")
-    public ResponseEntity<ApiResponse<BookingDTO>> checkIn(@PathVariable String ref) {
-        return ResponseEntity.ok(bookingService.checkIn(ref));
-    }
-
-    @PutMapping("/{ref}/check-out")
-    public ResponseEntity<ApiResponse<BookingDTO>> checkOut(@PathVariable String ref) {
-        return ResponseEntity.ok(bookingService.checkOut(ref));
-    }
 }

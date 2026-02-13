@@ -1,4 +1,4 @@
-package com.service.hotelbookingback.dtos.email;
+package com.service.hotelbookingback.dtos;
 
 import com.service.hotelbookingback.enums.EmailTemplate;
 import lombok.Data;

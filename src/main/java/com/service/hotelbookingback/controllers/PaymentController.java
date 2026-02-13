@@ -3,13 +3,12 @@ package com.service.hotelbookingback.controllers;
 import com.service.hotelbookingback.dtos.payment.CreatePaymentRequest;
 import com.service.hotelbookingback.dtos.payment.PaymentIntentRequest;
 import com.service.hotelbookingback.entities.Payment;
-import com.service.hotelbookingback.services.impl.StripeService;
+import com.service.hotelbookingback.services.StripeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/payments")

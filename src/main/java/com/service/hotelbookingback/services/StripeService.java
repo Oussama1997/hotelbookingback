@@ -1,4 +1,4 @@
-package com.service.hotelbookingback.services.impl;
+package com.service.hotelbookingback.services;
 
 import com.service.hotelbookingback.dtos.payment.CreatePaymentRequest;
 import com.service.hotelbookingback.dtos.payment.PaymentIntentRequest;
@@ -11,7 +11,7 @@ import com.service.hotelbookingback.enums.EmailTemplate;
 import com.service.hotelbookingback.enums.PaymentStatus;
 import com.service.hotelbookingback.repositories.BookingRepository;
 import com.service.hotelbookingback.repositories.PaymentRepository;
-import com.service.hotelbookingback.services.UserService;
+import com.service.hotelbookingback.services.impl.EmailServiceImpl;
 import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentIntent;
 import com.stripe.model.Refund;

@@ -1,6 +1,5 @@
 package com.service.hotelbookingback.controllers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.service.hotelbookingback.dtos.ApiResponse;
 import com.service.hotelbookingback.dtos.room.RoomDTO;
 import com.service.hotelbookingback.dtos.room.RoomRequestDTO;
@@ -31,7 +30,7 @@ public class RoomController {
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<RoomDTO>> createRoom(
             @RequestPart("room") String roomJson,
-            @RequestPart(value = "images", required = false) MultipartFile[] images) throws JsonProcessingException {
+            @RequestPart(value = "images", required = false) MultipartFile[] images) {
         RoomRequestDTO roomRequest = modelMapper.map(roomJson,new TypeToken<RoomRequestDTO>() {}.getType());
         return ResponseEntity.ok(roomService.createRoom(roomRequest, images));
     }
@@ -42,7 +41,7 @@ public class RoomController {
             @PathVariable String roomNumber,
             @RequestPart("room") String roomJson,
             @RequestPart(value = "images", required = false) MultipartFile[] images,
-            @RequestParam(value = "imagesToDelete", required = false) List<String> imagesToDelete) throws JsonProcessingException {
+            @RequestParam(value = "imagesToDelete", required = false) List<String> imagesToDelete) {
         RoomRequestDTO roomRequest = modelMapper.map(roomJson,new TypeToken<RoomRequestDTO>() {}.getType());
         return ResponseEntity.ok(roomService.updateRoom(roomNumber, roomRequest, images, imagesToDelete));
     }

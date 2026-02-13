@@ -1,4 +1,4 @@
-package com.service.hotelbookingback.services.impl;
+package com.service.hotelbookingback.services;
 
 import com.service.hotelbookingback.configs.FileStorageProperties;
 import com.service.hotelbookingback.enums.ImageType;
@@ -127,14 +127,11 @@ public class FileStorageService {
 
     // Get file path
     private Path getFilePath(String fileName, ImageType imageType) {
-        switch (imageType) {
-            case ROOM_IMAGE:
-                return roomImagesLocation.resolve(fileName).normalize();
-            case USER_AVATAR:
-                return userAvatarsLocation.resolve(fileName).normalize();
-            default:
-                throw new IllegalArgumentException("Invalid image type: " + imageType);
-        }
+        return switch (imageType) {
+            case ROOM_IMAGE -> roomImagesLocation.resolve(fileName).normalize();
+            case USER_AVATAR -> userAvatarsLocation.resolve(fileName).normalize();
+            default -> throw new IllegalArgumentException("Invalid image type: " + imageType);
+        };
     }
 
     // Validate file
@@ -210,7 +207,7 @@ public class FileStorageService {
             String originalFileName = StringUtils.cleanPath(file.getOriginalFilename());
             String fileExtension = getFileExtension(originalFileName);
             String fileName = (imageType == ImageType.ROOM_IMAGE ? "room_" : "avatar_")
-                    + UUID.randomUUID().toString() + fileExtension;
+                    + UUID.randomUUID() + fileExtension;
 
             // Determine target directory
             Path targetLocation = imageType == ImageType.ROOM_IMAGE ? roomImagesLocation : userAvatarsLocation;

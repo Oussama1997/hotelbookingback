@@ -1,8 +1,6 @@
 package com.service.hotelbookingback.configs;
 
 import com.service.hotelbookingback.enums.EmailTemplate;
-import com.stripe.Stripe;
-import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

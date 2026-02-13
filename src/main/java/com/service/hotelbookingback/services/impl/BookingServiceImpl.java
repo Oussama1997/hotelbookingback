@@ -1,10 +1,7 @@
 package com.service.hotelbookingback.services.impl;
 
-import com.service.hotelbookingback.configs.EmailTemplateConfig;
 import com.service.hotelbookingback.dtos.BookingDTO;
-import com.service.hotelbookingback.dtos.NotificationDTO;
 import com.service.hotelbookingback.dtos.ApiResponse;
-import com.service.hotelbookingback.dtos.email.EmailNotificationRequest;
 import com.service.hotelbookingback.entities.Booking;
 import com.service.hotelbookingback.entities.Room;
 import com.service.hotelbookingback.entities.User;
@@ -13,13 +10,9 @@ import com.service.hotelbookingback.enums.EmailTemplate;
 import com.service.hotelbookingback.enums.PaymentStatus;
 import com.service.hotelbookingback.exceptions.InvalidBookingStateAndDateException;
 import com.service.hotelbookingback.exceptions.NotFoundException;
-import com.service.hotelbookingback.services.EmailService;
-import com.service.hotelbookingback.services.NotificationService;
+import com.service.hotelbookingback.services.*;
 import com.service.hotelbookingback.repositories.BookingRepository;
 import com.service.hotelbookingback.repositories.RoomRepository;
-import com.service.hotelbookingback.services.BookingService;
-import com.service.hotelbookingback.services.UserService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -44,11 +37,9 @@ public class BookingServiceImpl implements BookingService {
 
     private final BookingRepository bookingRepository;
     private final RoomRepository roomRepository;
-    private final NotificationService notificationService;
     private final ModelMapper modelMapper;
     private final UserService userService;
     private final BookingCodeGenerator bookingCodeGenerator;
-    private final EmailTemplateConfig emailTemplateConfig;
     private final EmailService emailService;
 
     @Override
@@ -69,6 +60,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public ApiResponse<BookingDTO> createBooking(BookingDTO bookingDTO) {
         User currentUser = userService.getCurrentLoggedInUser();
+
         Room room = roomRepository.findByRoomNumber(bookingDTO.getRoomNumber())
                 .orElseThrow(()-> new NotFoundException("Room Not Found"));
         //validation: Ensure the check-in date is not before today
@@ -136,11 +128,11 @@ public class BookingServiceImpl implements BookingService {
             booking.setSpecialRequests(bookingDTO.getSpecialRequests());
         }
         Booking savedBooking = bookingRepository.save(booking);
-        sendNotifBookCre(currentUser,savedBooking);
+        sendNotifBookCreation(currentUser,savedBooking);
         return modelMapper.map(savedBooking, BookingDTO.class);
     }
 
-    private void sendNotifBookCre(User currentUser, Booking booking){
+    private void sendNotifBookCreation(User currentUser, Booking booking){
         //generate the payment url which will be sent via mail
         String paymentUrl = "http://localhost:4200/booking/payment/" + booking.getBookingReference();
         log.info("PAYMENT LINK: {}", paymentUrl);
@@ -206,62 +198,6 @@ public class BookingServiceImpl implements BookingService {
             throw new InvalidBookingStateAndDateException("Invalid stay duration");
         }
         return pricePerNight.multiply(BigDecimal.valueOf(days)).multiply(BigDecimal.valueOf(1.1)); // add fees and tax
-    }
-
-    @Transactional
-    public ApiResponse<BookingDTO> checkIn(String bookingReference) {
-
-        Booking booking = bookingRepository.findByBookingReference(bookingReference)
-                .orElseThrow(() -> new NotFoundException("Booking not found"));
-
-        if (booking.getCheckInDate() != null) {
-            throw new RuntimeException("Guest already checked in");
-        }
-        if (LocalDate.now().isBefore(booking.getCheckInDate())) {
-            throw new RuntimeException("Guest cannot check-in before arrival date");
-        }
-        if (booking.getBookingStatus() != BookingStatus.CONFIRMED) {
-            throw new RuntimeException("Booking is not ready for check-in");
-        }
-
-        booking.setBookingStatus(BookingStatus.CHECKED_IN);
-        booking.setCheckInDate(LocalDate.now());
-
-        Booking savedB = bookingRepository.save(booking);
-        BookingDTO bookingDTO = modelMapper.map(savedB, BookingDTO.class);
-        return  ApiResponse.<BookingDTO>builder()
-                .status(200)
-                .message("success")
-                .data(bookingDTO)
-                .build();
-    }
-
-    @Transactional
-    public ApiResponse<BookingDTO> checkOut(String bookingReference) {
-
-        Booking booking = bookingRepository.findByBookingReference(bookingReference)
-                .orElseThrow(() -> new NotFoundException("Booking not found"));
-
-        if (booking.getCheckInDate() == null) {
-            throw new RuntimeException("Guest never checked in");
-        }
-        if (booking.getBookingStatus() != BookingStatus.CHECKED_IN) {
-            throw new RuntimeException("Guest is not checked-in");
-        }
-        if (booking.getCheckOutDate() != null) {
-            throw new RuntimeException("Guest already checked out");
-        }
-
-        booking.setBookingStatus(BookingStatus.CHECKED_OUT);
-        booking.setCheckOutDate(LocalDate.now());
-
-        Booking savedB = bookingRepository.save(booking);
-        BookingDTO bookingDTO = modelMapper.map(savedB, BookingDTO.class);
-        return  ApiResponse.<BookingDTO>builder()
-                .status(200)
-                .message("success")
-                .data(bookingDTO)
-                .build();
     }
 
 }

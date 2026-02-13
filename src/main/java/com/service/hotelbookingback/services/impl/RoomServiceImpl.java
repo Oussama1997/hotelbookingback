@@ -11,6 +11,7 @@ import com.service.hotelbookingback.exceptions.InvalidBookingStateAndDateExcepti
 import com.service.hotelbookingback.exceptions.InvalidRequestException;
 import com.service.hotelbookingback.exceptions.NotFoundException;
 import com.service.hotelbookingback.repositories.RoomRepository;
+import com.service.hotelbookingback.services.FileStorageService;
 import com.service.hotelbookingback.services.RoomService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -115,7 +116,7 @@ public class RoomServiceImpl implements RoomService {
         fileStorageService.deleteFiles(imageFileNames, ImageType.ROOM_IMAGE);
 
         room.setImageFileNames(imagesToKeep);
-        Room updatedRoom = roomRepository.save(room);
+        roomRepository.save(room);
         return ApiResponse.<RoomDTO>builder()
                 .status(200)
                 .message("Deleted Successfully")
@@ -227,7 +228,7 @@ public class RoomServiceImpl implements RoomService {
         if (request.getCheckInDate().isEqual(request.getCheckOutDate())){
             throw new InvalidBookingStateAndDateException("check in date cannot be equal to check out date ");
         }
-        List<RoomDTO> filteredRooms = null;
+        List<RoomDTO> filteredRooms;
         if(request.getRoomType() == null){
             filteredRooms = roomRepository
                     .findAvailableRooms(request.getCheckInDate(),request.getCheckOutDate())

@@ -13,6 +13,7 @@ import com.service.hotelbookingback.repositories.BookingRepository;
 import com.service.hotelbookingback.repositories.UserRepository;
 import com.service.hotelbookingback.security.JwtUtils;
 import com.service.hotelbookingback.services.EmailService;
+import com.service.hotelbookingback.services.FileStorageService;
 import com.service.hotelbookingback.services.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,7 +46,7 @@ public class UserServiceImpl implements UserService {
     private final EmailService emailService;
 
     @Value("${jwt.expiration}")
-    private String expiration;
+    public String expiration;
 
     @Override
     public AuthResponse registerUser(RegistrationRequest registrationRequest) {
@@ -60,7 +61,7 @@ public class UserServiceImpl implements UserService {
                 .isActive(Boolean.TRUE)
                 .build();
         User savedUser = userRepository.save(userToSave);
-        sendNotifWel(savedUser);
+        sendNotifWelcome(savedUser);
         return AuthResponse.builder()
                 .status(200)
                 .message("User Created Successfully")
@@ -68,7 +69,7 @@ public class UserServiceImpl implements UserService {
 
     }
 
-    private void sendNotifWel(User user){
+    private void sendNotifWelcome(User user){
         //send notification via email
         Map<String, Object> vars = new HashMap<>();
         vars.put("name", user.getLastName() + " " + user.getFirstName());
@@ -250,9 +251,8 @@ public class UserServiceImpl implements UserService {
     public User getCurrentLoggedInUser(){
         log.info("Inside getOwnAccountDetails");
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByEmail(email)
+        return userRepository.findByEmail(email)
                 .orElseThrow(()-> new NotFoundException("User Not Found"));
-        return user;
     }
 
     @Override
@@ -299,7 +299,6 @@ public class UserServiceImpl implements UserService {
     }
 
     private UserDTO convertToResponseDTO(User user) {
-        UserDTO userDTO = modelMapper.map(user, UserDTO.class);
-        return userDTO;
+        return modelMapper.map(user, UserDTO.class);
     }
 }

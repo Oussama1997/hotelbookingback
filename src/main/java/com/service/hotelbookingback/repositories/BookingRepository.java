@@ -21,6 +21,16 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findByBookingStatusAndCheckInDateBefore(
             BookingStatus status, LocalDate date);
     List<Booking> findByBookingStatusAndCheckInDateIsNotNull(BookingStatus status);
+    List<Booking> findByCheckInDateAndBookingStatus(
+            LocalDate date,
+            BookingStatus status);
+
+    List<Booking> findByCheckOutDateAndBookingStatus(
+            LocalDate date,
+            BookingStatus status);
+
+    List<Booking> findByBookingStatus(BookingStatus status);
+
 
     @Query("""
                SELECT CASE WHEN COUNT(b) = 0 THEN true ELSE false END

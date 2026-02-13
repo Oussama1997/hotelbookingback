@@ -1,6 +1,6 @@
 package com.service.hotelbookingback.controllers;
 
-import com.service.hotelbookingback.dtos.email.EmailNotificationRequest;
+import com.service.hotelbookingback.dtos.EmailNotificationRequest;
 import com.service.hotelbookingback.services.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;

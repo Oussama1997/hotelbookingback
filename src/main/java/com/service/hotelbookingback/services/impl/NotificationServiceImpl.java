@@ -1,6 +1,6 @@
 package com.service.hotelbookingback.services.impl;
 
-import com.service.hotelbookingback.dtos.email.EmailNotificationRequest;
+import com.service.hotelbookingback.dtos.EmailNotificationRequest;
 import com.service.hotelbookingback.entities.User;
 import com.service.hotelbookingback.enums.EmailTemplate;
 import com.service.hotelbookingback.services.EmailService;
