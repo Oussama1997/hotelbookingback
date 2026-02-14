@@ -2,8 +2,8 @@ package com.service.hotelbookingback.controllers;
 
 import com.service.hotelbookingback.dtos.BookingDTO;
 import com.service.hotelbookingback.dtos.ApiResponse;
-import com.service.hotelbookingback.services.BookingService;
-import com.service.hotelbookingback.services.UserService;
+import com.service.hotelbookingback.services.interfaces.BookingService;
+import com.service.hotelbookingback.services.interfaces.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -49,4 +49,12 @@ public class BookingController {
         return ResponseEntity.ok(userService.getMyBookingHistory());
     }
 
+    @PutMapping("/refund/{reference}")
+    public ResponseEntity<?> refundBooking(@PathVariable String reference) {
+        if(bookingService.cancelBooking(reference)){
+            return ResponseEntity.badRequest()
+                    .body("Booking cannot be cancelled less than 24h before check-in");
+        }
+        return ResponseEntity.ok("Booking cancelled successfully");
+    }
 }

@@ -2,7 +2,7 @@ package com.service.hotelbookingback.controllers;
 
 import com.service.hotelbookingback.dtos.ApiResponse;
 import com.service.hotelbookingback.dtos.BookingDTO;
-import com.service.hotelbookingback.services.ReceptionService;
+import com.service.hotelbookingback.services.interfaces.ReceptionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

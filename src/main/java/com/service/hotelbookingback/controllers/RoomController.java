@@ -5,7 +5,7 @@ import com.service.hotelbookingback.dtos.room.RoomDTO;
 import com.service.hotelbookingback.dtos.room.RoomRequestDTO;
 import com.service.hotelbookingback.dtos.room.SearchRoomRequest;
 import com.service.hotelbookingback.enums.RoomType;
-import com.service.hotelbookingback.services.RoomService;
+import com.service.hotelbookingback.services.interfaces.RoomService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;

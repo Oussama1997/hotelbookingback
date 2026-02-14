@@ -1,4 +1,4 @@
-package com.service.hotelbookingback.services;
+package com.service.hotelbookingback.services.interfaces;
 
 import com.service.hotelbookingback.dtos.EmailNotificationRequest;
 

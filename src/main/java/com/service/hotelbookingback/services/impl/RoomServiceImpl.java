@@ -12,7 +12,7 @@ import com.service.hotelbookingback.exceptions.InvalidRequestException;
 import com.service.hotelbookingback.exceptions.NotFoundException;
 import com.service.hotelbookingback.repositories.RoomRepository;
 import com.service.hotelbookingback.services.FileStorageService;
-import com.service.hotelbookingback.services.RoomService;
+import com.service.hotelbookingback.services.interfaces.RoomService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -147,7 +147,7 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public ApiResponse deleteRoom(String roomNumber) {
+    public ApiResponse<RoomDTO> deleteRoom(String roomNumber) {
         Room room = roomRepository.findByRoomNumber(roomNumber)
                 .orElseThrow(() -> new RuntimeException("Room not found"));
         // Delete all associated images
@@ -155,7 +155,7 @@ public class RoomServiceImpl implements RoomService {
             fileStorageService.deleteFiles(room.getImageFileNames(), ImageType.ROOM_IMAGE);
         }
         roomRepository.delete(room);
-        return ApiResponse.builder()
+        return ApiResponse.<RoomDTO>builder()
                 .status(200)
                 .message("Room Deleted Successfully")
                 .build();

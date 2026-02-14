@@ -23,6 +23,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -69,9 +70,9 @@ public class FileStorageService {
         validateFile(file);
         try {
             // Generate unique filename
-            String originalFileName = StringUtils.cleanPath(file.getOriginalFilename());
+            String originalFileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
             String fileExtension = getFileExtension(originalFileName);
-            String fileName = prefix + "_" + UUID.randomUUID().toString() + fileExtension;
+            String fileName = prefix + "_" + UUID.randomUUID() + fileExtension;
 
             // Copy file to target location
             Path targetPath = targetLocation.resolve(fileName);
@@ -157,7 +158,7 @@ public class FileStorageService {
         }
 
         // Clean filename
-        String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+        String fileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
 
         // Check for path traversal
         if (fileName.contains("..")) {
@@ -204,7 +205,7 @@ public class FileStorageService {
             );
 
             // Generate filename
-            String originalFileName = StringUtils.cleanPath(file.getOriginalFilename());
+            String originalFileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
             String fileExtension = getFileExtension(originalFileName);
             String fileName = (imageType == ImageType.ROOM_IMAGE ? "room_" : "avatar_")
                     + UUID.randomUUID() + fileExtension;
@@ -223,18 +224,12 @@ public class FileStorageService {
     }
 
     private String getImageFormat(String fileExtension) {
-        switch (fileExtension.toLowerCase()) {
-            case ".jpg":
-            case ".jpeg":
-                return "jpeg";
-            case ".png":
-                return "png";
-            case ".gif":
-                return "gif";
-            case ".webp":
-                return "webp";
-            default:
-                return "jpeg";
-        }
+        return switch (fileExtension.toLowerCase()) {
+            case ".jpg", ".jpeg" -> "jpeg";
+            case ".png" -> "png";
+            case ".gif" -> "gif";
+            case ".webp" -> "webp";
+            default -> "jpeg";
+        };
     }
 }

@@ -3,6 +3,7 @@ package com.service.hotelbookingback.dtos.payment;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.service.hotelbookingback.dtos.BookingDTO;
+import com.service.hotelbookingback.dtos.UserDTO;
 import com.service.hotelbookingback.enums.PaymentGateway;
 import com.service.hotelbookingback.enums.PaymentStatus;
 import lombok.AllArgsConstructor;
@@ -23,13 +24,14 @@ public class PaymentDTO {
 
     private Long id;
     private BookingDTO booking;
+    private UserDTO user;
     private Long transactionId;
     private BigDecimal amount;
     private String currency;
-    private PaymentGateway paymentMethod;
-    private LocalDateTime paymentDate;
+    private PaymentGateway method;
+    private LocalDateTime date;
     private PaymentStatus status;
-    private String bookingReference;
+    private String reference;
     private String failureReason;
-    private String approvalLink; //paypal payment approval UEL
+    private String approvalLink;
 }

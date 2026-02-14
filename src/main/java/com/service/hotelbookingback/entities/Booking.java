@@ -37,11 +37,11 @@ public class Booking {
     private LocalDate checkInDate;
     private LocalDate checkOutDate;
     private BigDecimal totalPrice;
-    private String bookingReference;
+    private String reference;
     private int guests;
 
     @Enumerated(EnumType.STRING)
-    private BookingStatus bookingStatus;
+    private BookingStatus status;
 
     @Column(name = "payment_deadline")
     private LocalDateTime paymentDeadline;

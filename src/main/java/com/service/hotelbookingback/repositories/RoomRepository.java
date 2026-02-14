@@ -19,7 +19,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
                     FROM Booking b
                     WHERE :checkInDate <= b.checkOutDate
                     AND :checkOutDate >= b.checkInDate
-                    AND b.bookingStatus IN ('BOOKED', 'CHECKED_IN')
+                    AND b.status IN ('BOOKED', 'CHECKED_IN')
                 )
             """)
     List<Room> findAvailableRooms(

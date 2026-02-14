@@ -14,31 +14,27 @@ import java.util.Optional;
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     List<Booking> findByUserId(Long userId);
-    Optional<Booking> findByBookingReference(String bookingReference);
-    boolean existsByUserIdAndBookingStatus(Long userId, BookingStatus status);
-    List<Booking> findByBookingStatusAndPaymentDeadlineBefore(
+    Optional<Booking> findByReference(String reference);
+    boolean existsByUserIdAndStatus(Long userId, BookingStatus status);
+    List<Booking> findByStatusAndPaymentDeadlineBefore(
             BookingStatus status, LocalDateTime time);
-    List<Booking> findByBookingStatusAndCheckInDateBefore(
+    List<Booking> findByStatusAndCheckInDateBefore(
             BookingStatus status, LocalDate date);
-    List<Booking> findByBookingStatusAndCheckInDateIsNotNull(BookingStatus status);
-    List<Booking> findByCheckInDateAndBookingStatus(
+    List<Booking> findByStatusAndCheckInDateIsNotNull(BookingStatus status);
+    List<Booking> findByCheckInDateAndStatus(
             LocalDate date,
             BookingStatus status);
-
-    List<Booking> findByCheckOutDateAndBookingStatus(
+    List<Booking> findByCheckOutDateAndStatus(
             LocalDate date,
             BookingStatus status);
-
-    List<Booking> findByBookingStatus(BookingStatus status);
-
-
+    List<Booking> findByStatus(BookingStatus status);
     @Query("""
                SELECT CASE WHEN COUNT(b) = 0 THEN true ELSE false END
                 FROM Booking b
                 WHERE b.room.id = :roomId
                   AND :checkInDate <= b.checkOutDate
                   AND :checkOutDate >= b.checkInDate
-                  AND b.bookingStatus IN ('PENDING_PAYMENT','CONFIRMED','CHECKED_IN')
+                  AND b.status IN ('PENDING_PAYMENT','CONFIRMED','CHECKED_IN')
             """)
     boolean isRoomAvailable(@Param("roomId") Long roomId,
                             @Param("checkInDate") LocalDate checkInDate,

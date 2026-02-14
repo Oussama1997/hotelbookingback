@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.service.hotelbookingback.dtos.room.RoomDTO;
 import com.service.hotelbookingback.enums.BookingStatus;
+import com.service.hotelbookingback.enums.PaymentStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -27,11 +28,13 @@ public class BookingDTO {
     private String roomNumber;
     private LocalDate checkInDate;
     private LocalDate checkOutDate;
-    private BigDecimal totalPrice;
-    private BookingStatus bookingStatus;
-    private String specialRequests;
-    private String bookingReference;
     private int guests;
+    private BigDecimal totalPrice;
+    private String reference;
+    private BookingStatus status;
+    private String specialRequests;
+    private LocalDateTime paymentDeadline;
+    private PaymentStatus paymentStatus;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
 }

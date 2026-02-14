@@ -32,14 +32,14 @@ public class Payment {
     private String currency;
 
     @Enumerated(EnumType.STRING)
-    private PaymentGateway paymentGateway;
+    private PaymentGateway method;
 
-    private LocalDateTime paymentDate;
+    private LocalDateTime date;
 
     @Enumerated(EnumType.STRING)
     private PaymentStatus status;
 
-    private String bookingReference;
+    private String reference;
     private String failureReason;
 
     @ManyToOne

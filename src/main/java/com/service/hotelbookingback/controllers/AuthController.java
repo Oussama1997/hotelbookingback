@@ -6,7 +6,7 @@ import com.service.hotelbookingback.dtos.auth.RefreshTokenRequest;
 import com.service.hotelbookingback.dtos.auth.RegistrationRequest;
 import com.service.hotelbookingback.exceptions.InvalidCredentialException;
 import com.service.hotelbookingback.exceptions.NotFoundException;
-import com.service.hotelbookingback.services.UserService;
+import com.service.hotelbookingback.services.interfaces.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

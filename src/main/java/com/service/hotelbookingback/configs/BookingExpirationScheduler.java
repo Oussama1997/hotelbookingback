@@ -25,15 +25,15 @@ public class BookingExpirationScheduler {
     public void cancelExpiredBookings() {
 
         List<Booking> expiredBookings =
-                bookingRepository.findByBookingStatusAndPaymentDeadlineBefore(
+                bookingRepository.findByStatusAndPaymentDeadlineBefore(
                         BookingStatus.PENDING_PAYMENT,
                         LocalDateTime.now()
                 );
 
         for (Booking booking : expiredBookings) {
-            log.info("Cancelling expired booking {}", booking.getBookingReference());
+            log.info("Cancelling expired booking {}", booking.getReference());
 
-            booking.setBookingStatus(BookingStatus.CANCELLED);
+            booking.setStatus(BookingStatus.CANCELLED);
             booking.setPaymentStatus(PaymentStatus.EXPIRED);
 
             bookingRepository.save(booking);
@@ -44,13 +44,13 @@ public class BookingExpirationScheduler {
     public void markNoShowBookings() {
 
         List<Booking> noShows = bookingRepository
-                .findByBookingStatusAndCheckInDateBefore(
+                .findByStatusAndCheckInDateBefore(
                         BookingStatus.CONFIRMED,
                         LocalDate.now()
                 );
 
         for (Booking booking : noShows) {
-            booking.setBookingStatus(BookingStatus.NO_SHOW);
+            booking.setStatus(BookingStatus.NO_SHOW);
             bookingRepository.save(booking);
         }
     }
@@ -59,10 +59,10 @@ public class BookingExpirationScheduler {
     public void completeFinishedStays() {
 
         List<Booking> finished = bookingRepository
-                .findByBookingStatusAndCheckInDateIsNotNull(BookingStatus.CHECKED_OUT);
+                .findByStatusAndCheckInDateIsNotNull(BookingStatus.CHECKED_OUT);
 
         for (Booking booking : finished) {
-            booking.setBookingStatus(BookingStatus.COMPLETED);
+            booking.setStatus(BookingStatus.COMPLETED);
             bookingRepository.save(booking);
         }
     }

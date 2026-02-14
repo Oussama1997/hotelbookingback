@@ -2,7 +2,7 @@ package com.service.hotelbookingback.services.impl;
 
 import com.service.hotelbookingback.configs.EmailTemplateConfig;
 import com.service.hotelbookingback.enums.EmailTemplate;
-import com.service.hotelbookingback.services.EmailService;
+import com.service.hotelbookingback.services.interfaces.EmailService;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

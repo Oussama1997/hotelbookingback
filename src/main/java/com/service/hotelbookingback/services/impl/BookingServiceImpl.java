@@ -13,6 +13,10 @@ import com.service.hotelbookingback.exceptions.NotFoundException;
 import com.service.hotelbookingback.services.*;
 import com.service.hotelbookingback.repositories.BookingRepository;
 import com.service.hotelbookingback.repositories.RoomRepository;
+import com.service.hotelbookingback.services.interfaces.BookingService;
+import com.service.hotelbookingback.services.interfaces.EmailService;
+import com.service.hotelbookingback.services.interfaces.PaymentService;
+import com.service.hotelbookingback.services.interfaces.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -21,6 +25,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -41,12 +46,14 @@ public class BookingServiceImpl implements BookingService {
     private final UserService userService;
     private final BookingCodeGenerator bookingCodeGenerator;
     private final EmailService emailService;
+    private final PaymentService paymentService;
 
     @Override
     public ApiResponse<List<BookingDTO>> getAllBookings() {
-        List<Booking> bookingList =bookingRepository.findAll(Sort.by(Sort.Direction.DESC, "id"));
-        List<BookingDTO> bookingDTOList = modelMapper.map(bookingList, new TypeToken<List<BookingDTO>>() {}.getType());
-        for(BookingDTO bookingDTO: bookingDTOList){
+        List<Booking> bookingList = bookingRepository.findAll(Sort.by(Sort.Direction.DESC, "id"));
+        List<BookingDTO> bookingDTOList = modelMapper.map(bookingList, new TypeToken<List<BookingDTO>>() {
+        }.getType());
+        for (BookingDTO bookingDTO : bookingDTOList) {
             bookingDTO.setUser(null);
             bookingDTO.setRoom(null);
         }
@@ -62,17 +69,17 @@ public class BookingServiceImpl implements BookingService {
         User currentUser = userService.getCurrentLoggedInUser();
 
         Room room = roomRepository.findByRoomNumber(bookingDTO.getRoomNumber())
-                .orElseThrow(()-> new NotFoundException("Room Not Found"));
+                .orElseThrow(() -> new NotFoundException("Room Not Found"));
         //validation: Ensure the check-in date is not before today
-        if (bookingDTO.getCheckInDate().isBefore(LocalDate.now())){
+        if (bookingDTO.getCheckInDate().isBefore(LocalDate.now())) {
             throw new InvalidBookingStateAndDateException("Check-In date cannot be before today ");
         }
         //validation: Ensure the check-out date is not before check in date
-        if (bookingDTO.getCheckOutDate().isBefore(bookingDTO.getCheckInDate())){
+        if (bookingDTO.getCheckOutDate().isBefore(bookingDTO.getCheckInDate())) {
             throw new InvalidBookingStateAndDateException("Check-Out date cannot be before Check-In date ");
         }
         //validation: Ensure the check-in date is not same as check out date
-        if (bookingDTO.getCheckInDate().isEqual(bookingDTO.getCheckOutDate())){
+        if (bookingDTO.getCheckInDate().isEqual(bookingDTO.getCheckOutDate())) {
             throw new InvalidBookingStateAndDateException("Check-In date cannot be equal to Check-Out date ");
         }
         //validation: Prevent booking too far in the past or unrealistic future
@@ -81,7 +88,7 @@ public class BookingServiceImpl implements BookingService {
         }
         //validation: Prevent multiple pending bookings per user for same dates
         boolean alreadyHasPending = bookingRepository
-                .existsByUserIdAndBookingStatus(currentUser.getId(), BookingStatus.PENDING_PAYMENT);
+                .existsByUserIdAndStatus(currentUser.getId(), BookingStatus.PENDING_PAYMENT);
         if (alreadyHasPending) {
             throw new InvalidBookingStateAndDateException(
                     "You already have a pending booking. Please complete payment first."
@@ -106,7 +113,7 @@ public class BookingServiceImpl implements BookingService {
 
     }
 
-    private BookingDTO saveBooking(BookingDTO bookingDTO, Room room, User currentUser){
+    private BookingDTO saveBooking(BookingDTO bookingDTO, Room room, User currentUser) {
         //calculate the total price needed to pay for the stay
         BigDecimal totalPrice = calculateTotalPrice(room, bookingDTO);
         String bookingReference = bookingCodeGenerator.generateBookingReference();
@@ -118,28 +125,28 @@ public class BookingServiceImpl implements BookingService {
         booking.setCheckOutDate(bookingDTO.getCheckOutDate());
         booking.setGuests(bookingDTO.getGuests());
         booking.setTotalPrice(totalPrice);
-        booking.setBookingReference(bookingReference);
+        booking.setReference(bookingReference);
 
-        booking.setBookingStatus(BookingStatus.PENDING_PAYMENT);
+        booking.setStatus(BookingStatus.PENDING_PAYMENT);
         booking.setPaymentStatus(PaymentStatus.PENDING);
         booking.setPaymentDeadline(LocalDateTime.now().plusMinutes(PAYMENT_EXPIRATION_MINUTES));
 
-        if (booking.getSpecialRequests() != null){
+        if (booking.getSpecialRequests() != null) {
             booking.setSpecialRequests(bookingDTO.getSpecialRequests());
         }
         Booking savedBooking = bookingRepository.save(booking);
-        sendNotifBookCreation(currentUser,savedBooking);
+        sendNotifBookCreation(currentUser, savedBooking);
         return modelMapper.map(savedBooking, BookingDTO.class);
     }
 
-    private void sendNotifBookCreation(User currentUser, Booking booking){
+    private void sendNotifBookCreation(User currentUser, Booking booking) {
         //generate the payment url which will be sent via mail
-        String paymentUrl = "http://localhost:4200/booking/payment/" + booking.getBookingReference();
+        String paymentUrl = "http://localhost:4200/booking/payment/" + booking.getReference();
         log.info("PAYMENT LINK: {}", paymentUrl);
         //send notification via email
         Map<String, Object> vars = new HashMap<>();
         vars.put("name", currentUser.getLastName() + " " + currentUser.getFirstName());
-        vars.put("bookingRef", booking.getBookingReference());
+        vars.put("bookingRef", booking.getReference());
         vars.put("room", booking.getRoom().getRoomNumber());
         vars.put("checkIn", booking.getCheckInDate());
         vars.put("checkOut", booking.getCheckOutDate());
@@ -150,21 +157,21 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public ApiResponse<BookingDTO> findBookingByReferenceNo(String bookingReference) {
-        Booking booking = bookingRepository.findByBookingReference(bookingReference)
-                .orElseThrow(()-> new NotFoundException("Booking with Reference No: " + bookingReference + " Not found"));
+    public ApiResponse<BookingDTO> findBookingByReferenceNo(String reference) {
+        Booking booking = bookingRepository.findByReference(reference)
+                .orElseThrow(() -> new NotFoundException("Booking with Reference No: " + reference + " Not found"));
         if (booking.getPaymentDeadline() != null &&
                 booking.getPaymentDeadline().isBefore(LocalDateTime.now()) &&
-                booking.getPaymentStatus() == PaymentStatus.PENDING) {
+                (booking.getPaymentStatus() == PaymentStatus.PENDING
+                        || booking.getPaymentStatus() == PaymentStatus.PROCESSING)) {
 
-            booking.setBookingStatus(BookingStatus.CANCELLED);
+            booking.setStatus(BookingStatus.CANCELLED);
             booking.setPaymentStatus(PaymentStatus.EXPIRED);
             bookingRepository.save(booking);
-
             throw new RuntimeException("Payment time expired for this booking");
         }
         BookingDTO bookingDTO = modelMapper.map(booking, BookingDTO.class);
-        return  ApiResponse.<BookingDTO>builder()
+        return ApiResponse.<BookingDTO>builder()
                 .status(200)
                 .message("success")
                 .data(bookingDTO)
@@ -190,8 +197,7 @@ public class BookingServiceImpl implements BookingService {
                 .build();
     }*/
 
-
-    private BigDecimal calculateTotalPrice(Room room, BookingDTO bookingDTO){
+    private BigDecimal calculateTotalPrice(Room room, BookingDTO bookingDTO) {
         BigDecimal pricePerNight = room.getPricePerNight();
         long days = ChronoUnit.DAYS.between(bookingDTO.getCheckInDate(), bookingDTO.getCheckOutDate());
         if (days <= 0) {
@@ -200,4 +206,30 @@ public class BookingServiceImpl implements BookingService {
         return pricePerNight.multiply(BigDecimal.valueOf(days)).multiply(BigDecimal.valueOf(1.1)); // add fees and tax
     }
 
+    public boolean cancelBooking(String reference){
+        Booking booking = bookingRepository.findByReference(reference)
+                .orElseThrow(() -> new NotFoundException("Booking with Reference No: " + reference + " Not found"));
+        if (!canCancelBooking(booking)) {
+            return false;
+        }
+        booking.setStatus(BookingStatus.REFUNDED);
+        bookingRepository.save(booking);
+        // refund if payment exists
+        paymentService.refundIfPaid(booking);
+        return true;
+    }
+
+    public boolean canCancelBooking(Booking booking) {
+        // cannot cancel if already checked in/out
+        if (booking.getStatus() == BookingStatus.CHECKED_IN ||
+                booking.getStatus() == BookingStatus.CHECKED_OUT ||
+                booking.getStatus() == BookingStatus.COMPLETED) {
+            return false;
+        }
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime checkIn = booking.getCheckInDate().atStartOfDay();
+        Duration duration = Duration.between(now, checkIn);
+        // free cancellation only if > 24h before check-in
+        return duration.toHours() >= 24;
+    }
 }

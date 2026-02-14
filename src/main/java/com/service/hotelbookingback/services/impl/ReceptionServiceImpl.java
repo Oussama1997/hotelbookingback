@@ -6,7 +6,7 @@ import com.service.hotelbookingback.entities.Booking;
 import com.service.hotelbookingback.enums.BookingStatus;
 import com.service.hotelbookingback.exceptions.NotFoundException;
 import com.service.hotelbookingback.repositories.BookingRepository;
-import com.service.hotelbookingback.services.ReceptionService;
+import com.service.hotelbookingback.services.interfaces.ReceptionService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +28,7 @@ public class ReceptionServiceImpl implements ReceptionService {
 
     @Override
     public ApiResponse<List<BookingDTO>> getTodayArrivals() {
-        List<BookingDTO> bookingList = bookingRepository.findByCheckInDateAndBookingStatus(
+        List<BookingDTO> bookingList = bookingRepository.findByCheckInDateAndStatus(
                 LocalDate.now(),
                 BookingStatus.CONFIRMED)
                 .stream().map(this::convertToResponseDTO)
@@ -42,7 +42,7 @@ public class ReceptionServiceImpl implements ReceptionService {
 
     @Override
     public ApiResponse<List<BookingDTO>> getTodayDepartures() {
-        List<BookingDTO> bookingList = bookingRepository.findByCheckOutDateAndBookingStatus(
+        List<BookingDTO> bookingList = bookingRepository.findByCheckOutDateAndStatus(
                 LocalDate.now(),
                 BookingStatus.CHECKED_IN)
                 .stream().map(this::convertToResponseDTO)
@@ -56,7 +56,7 @@ public class ReceptionServiceImpl implements ReceptionService {
 
     @Override
     public ApiResponse<List<BookingDTO>> getInHouseGuests() {
-        List<BookingDTO> bookingList = bookingRepository.findByBookingStatus(
+        List<BookingDTO> bookingList = bookingRepository.findByStatus(
                 BookingStatus.CHECKED_IN)
                 .stream().map(this::convertToResponseDTO)
                 .toList();
@@ -70,7 +70,7 @@ public class ReceptionServiceImpl implements ReceptionService {
     @Transactional
     public ApiResponse<BookingDTO> checkIn(String bookingReference) {
 
-        Booking booking = bookingRepository.findByBookingReference(bookingReference)
+        Booking booking = bookingRepository.findByReference(bookingReference)
                 .orElseThrow(() -> new NotFoundException("Booking not found"));
 
         if (booking.getCheckInDate() != null) {
@@ -79,11 +79,11 @@ public class ReceptionServiceImpl implements ReceptionService {
         if (LocalDate.now().isBefore(booking.getCheckInDate())) {
             throw new RuntimeException("Guest cannot check-in before arrival date");
         }
-        if (booking.getBookingStatus() != BookingStatus.CONFIRMED) {
+        if (booking.getStatus() != BookingStatus.CONFIRMED) {
             throw new RuntimeException("Booking is not ready for check-in");
         }
 
-        booking.setBookingStatus(BookingStatus.CHECKED_IN);
+        booking.setStatus(BookingStatus.CHECKED_IN);
         booking.setCheckInDate(LocalDate.now());
 
         Booking savedB = bookingRepository.save(booking);
@@ -98,20 +98,20 @@ public class ReceptionServiceImpl implements ReceptionService {
     @Transactional
     public ApiResponse<BookingDTO> checkOut(String bookingReference) {
 
-        Booking booking = bookingRepository.findByBookingReference(bookingReference)
+        Booking booking = bookingRepository.findByReference(bookingReference)
                 .orElseThrow(() -> new NotFoundException("Booking not found"));
 
         if (booking.getCheckInDate() == null) {
             throw new RuntimeException("Guest never checked in");
         }
-        if (booking.getBookingStatus() != BookingStatus.CHECKED_IN) {
+        if (booking.getStatus() != BookingStatus.CHECKED_IN) {
             throw new RuntimeException("Guest is not checked-in");
         }
         if (booking.getCheckOutDate() != null) {
             throw new RuntimeException("Guest already checked out");
         }
 
-        booking.setBookingStatus(BookingStatus.CHECKED_OUT);
+        booking.setStatus(BookingStatus.CHECKED_OUT);
         booking.setCheckOutDate(LocalDate.now());
 
         Booking savedB = bookingRepository.save(booking);

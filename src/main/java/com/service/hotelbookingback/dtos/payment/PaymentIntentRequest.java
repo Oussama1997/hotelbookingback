@@ -11,6 +11,6 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class PaymentIntentRequest {
     private BigDecimal amount;
-    private String bookingReference;
+    private String reference;
     private String currency;
 }

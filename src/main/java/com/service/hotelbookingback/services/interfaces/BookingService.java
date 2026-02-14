@@ -1,4 +1,4 @@
-package com.service.hotelbookingback.services;
+package com.service.hotelbookingback.services.interfaces;
 
 import com.service.hotelbookingback.dtos.BookingDTO;
 import com.service.hotelbookingback.dtos.ApiResponse;
@@ -10,4 +10,5 @@ public interface BookingService {
     ApiResponse<BookingDTO> createBooking(BookingDTO bookingDTO);
     ApiResponse<BookingDTO> findBookingByReferenceNo(String  bookingReference);
     //ApiResponse<BookingDTO> updateBooking(BookingDTO bookingDTO);
+    boolean cancelBooking(String reference);
 }
