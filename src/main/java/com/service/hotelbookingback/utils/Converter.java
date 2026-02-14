@@ -9,13 +9,26 @@ import com.service.hotelbookingback.entities.Booking;
 import com.service.hotelbookingback.entities.Payment;
 import com.service.hotelbookingback.entities.Room;
 import com.service.hotelbookingback.entities.User;
+import jakarta.annotation.PostConstruct;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public final class Converter {
 
     private static ModelMapper modelMapper;
+    private final ModelMapper injectedMapper;
+
+    @Autowired
+    public Converter(ModelMapper modelMapper) {
+        this.injectedMapper = modelMapper;
+    }
+
+    @PostConstruct
+    private void init() {
+        Converter.modelMapper = this.injectedMapper;
+    }
 
     public static UserDTO convertToResponseDTO(User user) {
         return modelMapper.map(user, UserDTO.class);
