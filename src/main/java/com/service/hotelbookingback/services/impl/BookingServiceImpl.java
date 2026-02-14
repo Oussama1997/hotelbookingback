@@ -2,6 +2,7 @@ package com.service.hotelbookingback.services.impl;
 
 import com.service.hotelbookingback.dtos.BookingDTO;
 import com.service.hotelbookingback.dtos.ApiResponse;
+import com.service.hotelbookingback.dtos.room.RoomDTO;
 import com.service.hotelbookingback.entities.Booking;
 import com.service.hotelbookingback.entities.Room;
 import com.service.hotelbookingback.entities.User;
@@ -50,9 +51,9 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public ApiResponse<List<BookingDTO>> getAllBookings() {
-        List<Booking> bookingList = bookingRepository.findAll(Sort.by(Sort.Direction.DESC, "id"));
-        List<BookingDTO> bookingDTOList = modelMapper.map(bookingList, new TypeToken<List<BookingDTO>>() {
-        }.getType());
+        List<BookingDTO> bookingDTOList = bookingRepository.findAll(Sort.by(Sort.Direction.DESC, "id"))
+                .stream().map(this::convertToResponseDTO)
+                .toList();
         for (BookingDTO bookingDTO : bookingDTOList) {
             bookingDTO.setUser(null);
             bookingDTO.setRoom(null);
@@ -231,5 +232,10 @@ public class BookingServiceImpl implements BookingService {
         Duration duration = Duration.between(now, checkIn);
         // free cancellation only if > 24h before check-in
         return duration.toHours() >= 24;
+    }
+
+    private BookingDTO convertToResponseDTO(Booking booking) {
+        BookingDTO dto = modelMapper.map(booking, BookingDTO.class);
+        return dto;
     }
 }

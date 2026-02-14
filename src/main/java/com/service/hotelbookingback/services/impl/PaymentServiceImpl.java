@@ -15,12 +15,12 @@ import com.service.hotelbookingback.repositories.BookingRepository;
 import com.service.hotelbookingback.repositories.PaymentRepository;
 import com.service.hotelbookingback.services.interfaces.PaymentService;
 import com.service.hotelbookingback.services.interfaces.UserService;
+import com.service.hotelbookingback.utils.Converter;
 import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentIntent;
 import com.stripe.model.Refund;
 import com.stripe.param.RefundCreateParams;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -36,7 +36,6 @@ public class PaymentServiceImpl implements PaymentService {
     private final EmailServiceImpl emailService;
     private final UserService userService;
     private final BookingRepository bookingRepository;
-    private final ModelMapper modelMapper;
 
     @Override
     public ApiResponse<PaymentIntentResponse> createPaymentIntent(PaymentIntentRequest request) {
@@ -107,7 +106,7 @@ public class PaymentServiceImpl implements PaymentService {
         return ApiResponse.<PaymentDTO>builder()
                 .status(200)
                 .message("success")
-                .data(convertToResponseDTO(savedPayment))
+                .data(Converter.convertToResponseDTO(savedPayment))
                 .build();
     }
 
@@ -134,7 +133,7 @@ public class PaymentServiceImpl implements PaymentService {
     public ApiResponse<List<PaymentDTO>> getAllPayments() {
 
         List<PaymentDTO> paymentDTOList = paymentRepository.findAll().stream()
-                .map(this::convertToResponseDTO)
+                .map(Converter::convertToResponseDTO)
                 .toList();
         return ApiResponse.<List<PaymentDTO>>builder()
                 .status(200)
@@ -150,7 +149,7 @@ public class PaymentServiceImpl implements PaymentService {
         return ApiResponse.<PaymentDTO>builder()
                 .status(200)
                 .message("Success")
-                .data(convertToResponseDTO(payment))
+                .data(Converter.convertToResponseDTO(payment))
                 .build();
     }
 
@@ -161,7 +160,7 @@ public class PaymentServiceImpl implements PaymentService {
         return ApiResponse.<PaymentDTO>builder()
                 .status(200)
                 .message("Success")
-                .data(convertToResponseDTO(payment))
+                .data(Converter.convertToResponseDTO(payment))
                 .build();
     }
 
@@ -183,7 +182,7 @@ public class PaymentServiceImpl implements PaymentService {
         return ApiResponse.<PaymentDTO>builder()
                 .status(200)
                 .message("Success")
-                .data(convertToResponseDTO(savedPayment))
+                .data(Converter.convertToResponseDTO(savedPayment))
                 .build();
     }
 
@@ -204,9 +203,5 @@ public class PaymentServiceImpl implements PaymentService {
             throw new RuntimeException("Refund failed");
         }
         return true;
-    }
-
-    private PaymentDTO convertToResponseDTO(Payment payment) {
-        return modelMapper.map(payment, PaymentDTO.class);
     }
 }

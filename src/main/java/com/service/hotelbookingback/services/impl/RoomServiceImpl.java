@@ -13,10 +13,10 @@ import com.service.hotelbookingback.exceptions.NotFoundException;
 import com.service.hotelbookingback.repositories.RoomRepository;
 import com.service.hotelbookingback.services.FileStorageService;
 import com.service.hotelbookingback.services.interfaces.RoomService;
+import com.service.hotelbookingback.utils.Converter;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -34,12 +34,11 @@ import java.util.stream.Collectors;
 public class RoomServiceImpl implements RoomService {
 
     private final RoomRepository roomRepository;
-    private final ModelMapper modelMapper;
     private final FileStorageService fileStorageService;
 
     @Override
     public ApiResponse<RoomDTO> createRoom(RoomRequestDTO roomRequest, MultipartFile[] images) {
-        Room roomToSave = modelMapper.map(roomRequest, Room.class);
+        Room roomToSave = Converter.convertToEntity(roomRequest);
         if (images != null && images.length > 0) {
             List<String> savedFileNames = fileStorageService.storeRoomImages(images);
             roomToSave.setImageFileNames(savedFileNames);
@@ -126,7 +125,7 @@ public class RoomServiceImpl implements RoomService {
     @Override
     public ApiResponse<List<RoomDTO>> getAllRooms() {
         List<RoomDTO> roomDTOList = roomRepository.findAll(Sort.by(Sort.Direction.DESC, "id"))
-                .stream().map(this::convertToResponseDTO)
+                .stream().map(Converter::convertToResponseDTO)
                 .collect(Collectors.toList());
         return ApiResponse.<List<RoomDTO>>builder()
                 .status(200)
@@ -142,7 +141,7 @@ public class RoomServiceImpl implements RoomService {
         return ApiResponse.<RoomDTO>builder()
                 .status(200)
                 .message("success")
-                .data(convertToResponseDTO(room))
+                .data(Converter.convertToResponseDTO(room))
                 .build();
     }
 
@@ -176,7 +175,7 @@ public class RoomServiceImpl implements RoomService {
             throw new InvalidBookingStateAndDateException("check in date cannot be equal to check out date ");
         }
         List<RoomDTO> roomDTOList = roomRepository.findAvailableRooms(checkInDate, checkOutDate)
-                .stream().map(this::convertToResponseDTO)
+                .stream().map(Converter::convertToResponseDTO)
                 .collect(Collectors.toList());
         return ApiResponse.<List<RoomDTO>>builder()
                 .status(200)
@@ -197,7 +196,7 @@ public class RoomServiceImpl implements RoomService {
     @Override
     public ApiResponse<List<RoomDTO>> searchRooms(String input) {
         List<RoomDTO> roomDTOList = roomRepository.searchRooms(input)
-                .stream().map(this::convertToResponseDTO)
+                .stream().map(Converter::convertToResponseDTO)
                 .collect(Collectors.toList());
         return ApiResponse.<List<RoomDTO>>builder()
                 .status(200)
@@ -232,7 +231,7 @@ public class RoomServiceImpl implements RoomService {
         if(request.getRoomType() == null){
             filteredRooms = roomRepository
                     .findAvailableRooms(request.getCheckInDate(),request.getCheckOutDate())
-                    .stream().map(this::convertToResponseDTO)
+                    .stream().map(Converter::convertToResponseDTO)
                     .collect(Collectors.toList());
 
         } else {
@@ -242,7 +241,7 @@ public class RoomServiceImpl implements RoomService {
                     .stream()
                     .filter(room -> request.getGuests() == 0 || room.getCapacity() >= request.getGuests())
                     .filter(room -> request.getRoomType() == null || request.getRoomType().equals(room.getType()))
-                    .map(this::convertToResponseDTO)
+                    .map(Converter::convertToResponseDTO)
                     .collect(Collectors.toList());
         }
         return ApiResponse.<List<RoomDTO>>builder()
@@ -250,12 +249,5 @@ public class RoomServiceImpl implements RoomService {
                 .message("success")
                 .data(filteredRooms)
                 .build();
-    }
-
-    private RoomDTO convertToResponseDTO(Room room) {
-        RoomDTO dto = modelMapper.map(room, RoomDTO.class);
-        dto.setImageUrls(room.getImageUrls());
-        dto.setPrimaryImageUrl(room.getPrimaryImageUrl());
-        return dto;
     }
 }

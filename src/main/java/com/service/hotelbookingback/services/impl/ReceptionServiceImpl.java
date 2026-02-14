@@ -7,10 +7,10 @@ import com.service.hotelbookingback.enums.BookingStatus;
 import com.service.hotelbookingback.exceptions.NotFoundException;
 import com.service.hotelbookingback.repositories.BookingRepository;
 import com.service.hotelbookingback.services.interfaces.ReceptionService;
+import com.service.hotelbookingback.utils.Converter;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -23,15 +23,13 @@ import java.util.List;
 public class ReceptionServiceImpl implements ReceptionService {
 
     private final BookingRepository bookingRepository;
-    private final ModelMapper modelMapper;
-
 
     @Override
     public ApiResponse<List<BookingDTO>> getTodayArrivals() {
         List<BookingDTO> bookingList = bookingRepository.findByCheckInDateAndStatus(
                 LocalDate.now(),
                 BookingStatus.CONFIRMED)
-                .stream().map(this::convertToResponseDTO)
+                .stream().map(Converter::convertToResponseDTO)
                 .toList();
         return ApiResponse.<List<BookingDTO>>builder()
                 .status(200)
@@ -45,7 +43,7 @@ public class ReceptionServiceImpl implements ReceptionService {
         List<BookingDTO> bookingList = bookingRepository.findByCheckOutDateAndStatus(
                 LocalDate.now(),
                 BookingStatus.CHECKED_IN)
-                .stream().map(this::convertToResponseDTO)
+                .stream().map(Converter::convertToResponseDTO)
                 .toList();
         return ApiResponse.<List<BookingDTO>>builder()
                 .status(200)
@@ -58,7 +56,7 @@ public class ReceptionServiceImpl implements ReceptionService {
     public ApiResponse<List<BookingDTO>> getInHouseGuests() {
         List<BookingDTO> bookingList = bookingRepository.findByStatus(
                 BookingStatus.CHECKED_IN)
-                .stream().map(this::convertToResponseDTO)
+                .stream().map(Converter::convertToResponseDTO)
                 .toList();
         return ApiResponse.<List<BookingDTO>>builder()
                 .status(200)
@@ -86,12 +84,11 @@ public class ReceptionServiceImpl implements ReceptionService {
         booking.setStatus(BookingStatus.CHECKED_IN);
         booking.setCheckInDate(LocalDate.now());
 
-        Booking savedB = bookingRepository.save(booking);
-        BookingDTO bookingDTO = modelMapper.map(savedB, BookingDTO.class);
+        Booking savedBooking = bookingRepository.save(booking);
         return  ApiResponse.<BookingDTO>builder()
                 .status(200)
                 .message("success")
-                .data(bookingDTO)
+                .data(Converter.convertToResponseDTO(savedBooking))
                 .build();
     }
 
@@ -114,16 +111,11 @@ public class ReceptionServiceImpl implements ReceptionService {
         booking.setStatus(BookingStatus.CHECKED_OUT);
         booking.setCheckOutDate(LocalDate.now());
 
-        Booking savedB = bookingRepository.save(booking);
-        BookingDTO bookingDTO = modelMapper.map(savedB, BookingDTO.class);
+        Booking savedbooking = bookingRepository.save(booking);
         return  ApiResponse.<BookingDTO>builder()
                 .status(200)
                 .message("success")
-                .data(bookingDTO)
+                .data(Converter.convertToResponseDTO(savedbooking))
                 .build();
-    }
-
-    private BookingDTO convertToResponseDTO(Booking booking) {
-        return modelMapper.map(booking, BookingDTO.class);
     }
 }

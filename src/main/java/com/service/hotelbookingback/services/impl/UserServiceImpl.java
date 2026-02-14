@@ -2,7 +2,6 @@ package com.service.hotelbookingback.services.impl;
 
 import com.service.hotelbookingback.dtos.*;
 import com.service.hotelbookingback.dtos.auth.*;
-import com.service.hotelbookingback.entities.Booking;
 import com.service.hotelbookingback.entities.User;
 import com.service.hotelbookingback.enums.EmailTemplate;
 import com.service.hotelbookingback.enums.ImageType;
@@ -15,10 +14,9 @@ import com.service.hotelbookingback.security.JwtUtils;
 import com.service.hotelbookingback.services.interfaces.EmailService;
 import com.service.hotelbookingback.services.FileStorageService;
 import com.service.hotelbookingback.services.interfaces.UserService;
+import com.service.hotelbookingback.utils.Converter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
-import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -40,7 +38,6 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
-    private final ModelMapper modelMapper;
     private final BookingRepository bookingRepository;
     private final FileStorageService fileStorageService;
     private final EmailService emailService;
@@ -107,8 +104,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ApiResponse<List<UserDTO>> getAllUsers() {
-        List<User> users = userRepository.findAll(Sort.by(Sort.Direction.DESC, "id"));
-        List<UserDTO> userDTOList = modelMapper.map(users, new TypeToken<List<UserDTO>>(){}.getType());
+        List<UserDTO> userDTOList = userRepository
+                .findAll(Sort.by(Sort.Direction.DESC, "id"))
+                .stream().map(Converter::convertToResponseDTO)
+                .toList();
         return ApiResponse.<List<UserDTO>>builder()
                 .status(200)
                 .message("Success")
@@ -119,11 +118,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public ApiResponse<UserDTO> getOwnAccountDetails() {
         User existingUser = getCurrentLoggedInUser();
-        UserDTO userDTO = modelMapper.map(existingUser, UserDTO.class);
         return ApiResponse.<UserDTO>builder()
                 .status(200)
                 .message("Success")
-                .data(userDTO)
+                .data(Converter.convertToResponseDTO(existingUser))
                 .build();
     }
 
@@ -132,11 +130,10 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(()-> new NotFoundException("User Not Found"));
         log.info("Inside getUserAccount User Email is {}", email);
-        UserDTO userDTO = modelMapper.map(user, UserDTO.class);
         return ApiResponse.<UserDTO>builder()
                 .status(200)
                 .message("Success")
-                .data(userDTO)
+                .data(Converter.convertToResponseDTO(user))
                 .build();
     }
 
@@ -149,11 +146,10 @@ public class UserServiceImpl implements UserService {
         if (request.getUsername() != null) existingUser.setUsername(request.getUsername());
         if (request.getPhoneNumber() != null) existingUser.setPhoneNumber(request.getPhoneNumber());
         userRepository.save(existingUser);
-        UserDTO userDTO = modelMapper.map(existingUser, UserDTO.class);
         return ApiResponse.<UserDTO>builder()
                 .status(200)
                 .message("User Updated Successfully")
-                .data(userDTO)
+                .data(Converter.convertToResponseDTO(existingUser))
                 .build();
     }
 
@@ -198,8 +194,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public ApiResponse<List<BookingDTO>> getMyBookingHistory() {
         User user = getCurrentLoggedInUser();
-        List<Booking> bookingList = bookingRepository.findByUserId(user.getId());
-        List<BookingDTO> bookingDTOList = modelMapper.map(bookingList, new TypeToken<List<BookingDTO>>(){}.getType());
+        List<BookingDTO> bookingDTOList = bookingRepository.findByUserId(user.getId())
+                .stream().map(Converter::convertToResponseDTO)
+                .toList();
         return ApiResponse.<List<BookingDTO>>builder()
                 .status(200)
                 .message("Success")
@@ -273,7 +270,7 @@ public class UserServiceImpl implements UserService {
         return ApiResponse.<UserDTO>builder()
                 .status(200)
                 .message("Success")
-                .data(convertToResponseDTO(savedUser))
+                .data(Converter.convertToResponseDTO(savedUser))
                 .build();
     }
 
@@ -294,11 +291,7 @@ public class UserServiceImpl implements UserService {
         return ApiResponse.<UserDTO>builder()
                 .status(200)
                 .message("User Deleted Successfully")
-                .data(convertToResponseDTO(savedUser))
+                .data(Converter.convertToResponseDTO(savedUser))
                 .build();
-    }
-
-    private UserDTO convertToResponseDTO(User user) {
-        return modelMapper.map(user, UserDTO.class);
     }
 }
