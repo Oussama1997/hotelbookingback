@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -33,16 +34,25 @@ public class Room {
     private String roomNumber;
 
     @Enumerated(EnumType.STRING)
+    @NotNull(message = "Room type is required")
+    @Column(nullable = false)
     private RoomType type;
 
     @DecimalMin(value = "0.1", message = "Price per night is required")
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal pricePerNight;
 
     @Min(value = 1, message = "Capacity must be at least 1")
+    @Column(nullable = false)
     private Integer capacity;
 
     @Column(columnDefinition = "TEXT")
     private String description;
+
+    @ElementCollection
+    @CollectionTable(name = "room_amenities", joinColumns = @JoinColumn(name = "room_id"))
+    @Column(name = "amenity")
+    private List<String> amenities = new ArrayList<>();
 
     @ElementCollection
     @CollectionTable(name = "room_images", joinColumns = @JoinColumn(name = "room_id"))

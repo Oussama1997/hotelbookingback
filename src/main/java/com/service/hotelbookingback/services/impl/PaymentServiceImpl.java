@@ -43,6 +43,9 @@ public class PaymentServiceImpl implements PaymentService {
         Booking booking = bookingRepository.findByReference(request.getReference())
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
 
+        if (booking.getPaymentStatus() == PaymentStatus.PAID) {
+            throw new RuntimeException("Booking already paid");
+        }
         if (booking.getStatus() != BookingStatus.PENDING_PAYMENT) {
             throw new RuntimeException("Booking is no longer payable");
         }
@@ -131,7 +134,6 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public ApiResponse<List<PaymentDTO>> getAllPayments() {
-
         List<PaymentDTO> paymentDTOList = paymentRepository.findAll().stream()
                 .map(Converter::convertToResponseDTO)
                 .toList();

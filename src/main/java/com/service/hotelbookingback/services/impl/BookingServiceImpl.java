@@ -2,7 +2,6 @@ package com.service.hotelbookingback.services.impl;
 
 import com.service.hotelbookingback.dtos.BookingDTO;
 import com.service.hotelbookingback.dtos.ApiResponse;
-import com.service.hotelbookingback.dtos.room.RoomDTO;
 import com.service.hotelbookingback.entities.Booking;
 import com.service.hotelbookingback.entities.Room;
 import com.service.hotelbookingback.entities.User;
@@ -18,10 +17,10 @@ import com.service.hotelbookingback.services.interfaces.BookingService;
 import com.service.hotelbookingback.services.interfaces.EmailService;
 import com.service.hotelbookingback.services.interfaces.PaymentService;
 import com.service.hotelbookingback.services.interfaces.UserService;
+import com.service.hotelbookingback.utils.Converter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.TypeToken;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -52,7 +51,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public ApiResponse<List<BookingDTO>> getAllBookings() {
         List<BookingDTO> bookingDTOList = bookingRepository.findAll(Sort.by(Sort.Direction.DESC, "id"))
-                .stream().map(this::convertToResponseDTO)
+                .stream().map(Converter::convertToResponseDTO)
                 .toList();
         for (BookingDTO bookingDTO : bookingDTOList) {
             bookingDTO.setUser(null);
@@ -158,7 +157,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public ApiResponse<BookingDTO> findBookingByReferenceNo(String reference) {
+    public ApiResponse<BookingDTO> findBookingByReference(String reference) {
         Booking booking = bookingRepository.findByReference(reference)
                 .orElseThrow(() -> new NotFoundException("Booking with Reference No: " + reference + " Not found"));
         if (booking.getPaymentDeadline() != null &&
@@ -171,7 +170,7 @@ public class BookingServiceImpl implements BookingService {
             bookingRepository.save(booking);
             throw new RuntimeException("Payment time expired for this booking");
         }
-        BookingDTO bookingDTO = modelMapper.map(booking, BookingDTO.class);
+        BookingDTO bookingDTO = Converter.convertToResponseDTO(booking);
         return ApiResponse.<BookingDTO>builder()
                 .status(200)
                 .message("success")
@@ -232,10 +231,5 @@ public class BookingServiceImpl implements BookingService {
         Duration duration = Duration.between(now, checkIn);
         // free cancellation only if > 24h before check-in
         return duration.toHours() >= 24;
-    }
-
-    private BookingDTO convertToResponseDTO(Booking booking) {
-        BookingDTO dto = modelMapper.map(booking, BookingDTO.class);
-        return dto;
     }
 }

@@ -26,21 +26,31 @@ public class Booking {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "user_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne(cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "room_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "room_id", nullable = false)
     private Room room;
 
+    @Column(nullable = false)
     private LocalDate checkInDate;
+
+    @Column(nullable = false)
     private LocalDate checkOutDate;
+
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal totalPrice;
+
+    @Column(nullable = false)
     private String reference;
+
+    @Column(nullable = false)
     private int guests;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private BookingStatus status;
 
     @Column(name = "payment_deadline")
@@ -60,4 +70,12 @@ public class Booking {
     @UpdateTimestamp
     @Column(name = "modified_at")
     private LocalDateTime modifiedAt;
+
+    @Transient
+    public long getNumberOfNights() {
+        if (checkInDate != null && checkOutDate != null) {
+            return java.time.temporal.ChronoUnit.DAYS.between(checkInDate, checkOutDate);
+        }
+        return 0;
+    }
 }

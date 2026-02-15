@@ -25,25 +25,33 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private String transactionId;
 
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
-    private String currency;
+
+    @Column(nullable = false)
+    private String currency = "USD";
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private PaymentGateway method;
 
+    @Column(nullable = false)
     private LocalDateTime date;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private PaymentStatus status;
 
+    @Column(nullable = false)
     private String reference;
+
     private String failureReason;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @CreationTimestamp

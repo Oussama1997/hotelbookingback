@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class ImageController {
 
-    private FileStorageService fileStorageService;
+    private final FileStorageService fileStorageService;
 
     // Serve room images
     @GetMapping("/rooms/{fileName:.+}")

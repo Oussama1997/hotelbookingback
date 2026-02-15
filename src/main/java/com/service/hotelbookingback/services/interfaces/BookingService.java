@@ -8,7 +8,7 @@ import java.util.List;
 public interface BookingService {
     ApiResponse<List<BookingDTO>> getAllBookings();
     ApiResponse<BookingDTO> createBooking(BookingDTO bookingDTO);
-    ApiResponse<BookingDTO> findBookingByReferenceNo(String  bookingReference);
+    ApiResponse<BookingDTO> findBookingByReference(String  bookingReference);
     //ApiResponse<BookingDTO> updateBooking(BookingDTO bookingDTO);
     boolean cancelBooking(String reference);
 }

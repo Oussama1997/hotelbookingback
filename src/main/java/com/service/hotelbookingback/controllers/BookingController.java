@@ -26,24 +26,24 @@ public class BookingController {
     }
 
     @PostMapping("/add")
-    @PreAuthorize("hasAuthority('CUSTOMER')")
+    @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<ApiResponse<BookingDTO>> createBooking(@RequestBody BookingDTO bookingDTO){
         return ResponseEntity.ok(bookingService.createBooking(bookingDTO));
     }
 
     @GetMapping("/{reference}")
-    @PreAuthorize("hasAuthority('CUSTOMER')")
-    public ResponseEntity<ApiResponse<BookingDTO>> findBookingByReferenceNo(@PathVariable String reference){
-        return ResponseEntity.ok(bookingService.findBookingByReferenceNo(reference));
+    @PreAuthorize("hasAuthority('USER')")
+    public ResponseEntity<ApiResponse<BookingDTO>> findBookingByReference(@PathVariable String reference){
+        return ResponseEntity.ok(bookingService.findBookingByReference(reference));
     }
 
     /*@PutMapping("/update")
-    @PreAuthorize("hasAuthority('CUSTOMER')")
+    @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<ApiResponse<BookingDTO>> updateBooking(@RequestBody BookingDTO bookingDTO){
         return ResponseEntity.ok(bookingService.updateBooking(bookingDTO));
     }*/
 
-    @PreAuthorize("hasAuthority('CUSTOMER')")
+    @PreAuthorize("hasAuthority('USER')")
     @GetMapping("/account/all")
     public ResponseEntity<ApiResponse<List<BookingDTO>>> getMyBookingHistory(){
         return ResponseEntity.ok(userService.getMyBookingHistory());

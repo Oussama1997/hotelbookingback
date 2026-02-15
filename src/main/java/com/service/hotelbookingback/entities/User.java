@@ -2,6 +2,7 @@ package com.service.hotelbookingback.entities;
 
 import com.service.hotelbookingback.enums.UserRole;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,15 +26,22 @@ public class User {
     private Long id;
 
     @NotBlank(message = "Email is required")
-    @Column(unique = true)
+    @Email(message = "Email must be valid")
+    @Column(unique = true, nullable = false)
     private String email;
 
     @NotBlank(message = "Password is required")
-    @Column(unique = true)
+    @Column(nullable = false)
     private String password;
 
+    @NotBlank(message = "First name is required")
     private String firstName;
+
+    @NotBlank(message = "Last name is required")
     private String lastName;
+
+    @NotBlank(message = "Username is required")
+    @Column(unique = true, nullable = false)
     private String username;
 
     @NotBlank(message = "Phone Number is required")
@@ -41,6 +49,7 @@ public class User {
     private String phoneNumber;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private UserRole role;
 
     private boolean isActive;

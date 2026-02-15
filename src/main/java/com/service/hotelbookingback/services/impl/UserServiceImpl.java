@@ -54,7 +54,7 @@ public class UserServiceImpl implements UserService {
                 .email(registrationRequest.getEmail())
                 .password(passwordEncoder.encode(registrationRequest.getPassword()))
                 .phoneNumber(registrationRequest.getPhoneNumber())
-                .role(UserRole.CUSTOMER)
+                .role(UserRole.USER)
                 .isActive(Boolean.TRUE)
                 .build();
         User savedUser = userRepository.save(userToSave);

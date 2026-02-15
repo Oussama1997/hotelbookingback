@@ -1,6 +1,5 @@
 package com.service.hotelbookingback.security;
 
-import com.service.hotelbookingback.entities.User;
 import com.service.hotelbookingback.exceptions.CustomAccessDenialHandler;
 import com.service.hotelbookingback.exceptions.CustomAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +36,7 @@ public class SecurityFilter {
                         ex.accessDeniedHandler(customAccessDenialHandler)
                                 .authenticationEntryPoint(customAuthenticationEntryPoint))
                 .authorizeHttpRequests(req ->
-                        req.requestMatchers("/api/auth/**", "/api/rooms/**", "/api/bookings/**")
+                        req.requestMatchers("/api/auth/**", "/api/rooms/**", "/api/images/**")
                                 .permitAll().anyRequest().authenticated())
                 .sessionManagement(mag ->
                         mag.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
